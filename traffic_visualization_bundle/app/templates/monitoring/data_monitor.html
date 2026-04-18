@@ -1,0 +1,274 @@
+{% extends 'base.html' %}
+
+{% block title %}数据监控 - 智能交通流量预测系统{% endblock %}
+
+{% block nav_monitor %}active{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{% url 'system_status' %}">系统监控</a></li>
+<li class="breadcrumb-item active">数据监控</li>
+{% endblock %}
+
+{% block content %}
+<div id="dataMonitorApp">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0" style="font-weight:700;color:#1e3a5f;">
+            <i class="bi bi-database-gear me-2"></i>数据采集监控
+        </h4>
+        <div>
+            <a href="{% url 'system_status' %}" class="btn btn-outline-secondary btn-sm me-1">系统监控</a>
+            <a href="{% url 'model_monitor' %}" class="btn btn-outline-primary btn-sm">模型监控</a>
+        </div>
+    </div>
+
+    <!-- Data Ingestion Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-start border-4 border-primary">
+                <div class="card-body py-3">
+                    <small class="text-muted">今日采集量</small>
+                    <h4 class="fw-bold mb-0" style="color:#1e3a5f;">15,680</h4>
+                    <small class="text-success"><i class="bi bi-arrow-up"></i> +8.3%</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-start border-4 border-success">
+                <div class="card-body py-3">
+                    <small class="text-muted">有效数据</small>
+                    <h4 class="fw-bold mb-0" style="color:#198754;">15,234</h4>
+                    <small class="text-muted">有效率: 97.2%</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-start border-4 border-warning">
+                <div class="card-body py-3">
+                    <small class="text-muted">异常数据</small>
+                    <h4 class="fw-bold mb-0" style="color:#ffc107;">312</h4>
+                    <small class="text-danger"><i class="bi bi-arrow-up"></i> +1.2%</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-start border-4 border-danger">
+                <div class="card-body py-3">
+                    <small class="text-muted">采集失败</small>
+                    <h4 class="fw-bold mb-0" style="color:#dc3545;">134</h4>
+                    <small class="text-muted">3个数据源离线</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Ingestion Rate Chart -->
+        <div class="col-lg-8 mb-4">
+            <div class="card">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-graph-up me-2"></i>数据采集速率（今日）</h6>
+                </div>
+                <div class="card-body">
+                    <div id="ingestionChart" style="height:300px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Quality Alerts -->
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-bell me-2"></i>质量告警</h6>
+                    <span class="badge bg-danger">4</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush" style="max-height:300px;overflow-y:auto;">
+                        <div class="list-group-item list-group-item-danger">
+                            <div class="d-flex justify-content-between">
+                                <strong style="font-size:0.85rem;">传感器 #127 离线</strong>
+                                <small>10:15</small>
+                            </div>
+                            <small>中山路-解放路，已离线15分钟</small>
+                        </div>
+                        <div class="list-group-item list-group-item-danger">
+                            <div class="d-flex justify-content-between">
+                                <strong style="font-size:0.85rem;">摄像头 #45 连接超时</strong>
+                                <small>09:45</small>
+                            </div>
+                            <small>科技路-创新大道，重试3次失败</small>
+                        </div>
+                        <div class="list-group-item list-group-item-warning">
+                            <div class="d-flex justify-content-between">
+                                <strong style="font-size:0.85rem;">数据延迟告警</strong>
+                                <small>09:30</small>
+                            </div>
+                            <small>学府路-高新路，数据延迟超过5分钟</small>
+                        </div>
+                        <div class="list-group-item list-group-item-warning">
+                            <div class="d-flex justify-content-between">
+                                <strong style="font-size:0.85rem;">异常值激增</strong>
+                                <small>09:00</small>
+                            </div>
+                            <small>人民大道-建设路，异常值率达到3.5%</small>
+                        </div>
+                        <div class="list-group-item list-group-item-info">
+                            <div class="d-flex justify-content-between">
+                                <strong style="font-size:0.85rem;">数据量预警</strong>
+                                <small>08:30</small>
+                            </div>
+                            <small>磁盘使用率达到52%，建议清理历史数据</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Source Health -->
+    <div class="card mb-4">
+        <div class="card-header bg-white py-3">
+            <h6 class="mb-0 fw-bold"><i class="bi bi-hdd-network me-2"></i>数据源健康状态</h6>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>数据源</th>
+                            <th>类型</th>
+                            <th>位置</th>
+                            <th>状态</th>
+                            <th>今日采集量</th>
+                            <th>最后更新</th>
+                            <th>延迟</th>
+                            <th>数据质量</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="fw-bold">传感器 #101</td>
+                            <td><span class="badge" style="background:#1e3a5f;">传感器</span></td>
+                            <td>中山路-解放路</td>
+                            <td><span class="badge bg-success"><i class="bi bi-circle-fill me-1" style="font-size:0.5rem;"></i>在线</span></td>
+                            <td>2,456</td>
+                            <td>1分钟前</td>
+                            <td><span class="text-success">正常</span></td>
+                            <td>
+                                <div class="progress" style="height:6px;width:80px;">
+                                    <div class="progress-bar bg-success" style="width:98%;"></div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">传感器 #127</td>
+                            <td><span class="badge" style="background:#1e3a5f;">传感器</span></td>
+                            <td>中山路-解放路</td>
+                            <td><span class="badge bg-danger"><i class="bi bi-circle-fill me-1" style="font-size:0.5rem;"></i>离线</span></td>
+                            <td>1,890</td>
+                            <td>15分钟前</td>
+                            <td><span class="text-danger">超时</span></td>
+                            <td>
+                                <div class="progress" style="height:6px;width:80px;">
+                                    <div class="progress-bar bg-danger" style="width:0%;"></div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">摄像头 #201</td>
+                            <td><span class="badge" style="background:#4ECDC4;">摄像头</span></td>
+                            <td>人民大道-建设路</td>
+                            <td><span class="badge bg-success"><i class="bi bi-circle-fill me-1" style="font-size:0.5rem;"></i>在线</span></td>
+                            <td>1,856</td>
+                            <td>30秒前</td>
+                            <td><span class="text-success">正常</span></td>
+                            <td>
+                                <div class="progress" style="height:6px;width:80px;">
+                                    <div class="progress-bar" style="width:95%;background:#4ECDC4;"></div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">摄像头 #45</td>
+                            <td><span class="badge" style="background:#4ECDC4;">摄像头</span></td>
+                            <td>科技路-创新大道</td>
+                            <td><span class="badge bg-danger"><i class="bi bi-circle-fill me-1" style="font-size:0.5rem;"></i>离线</span></td>
+                            <td>1,205</td>
+                            <td>20分钟前</td>
+                            <td><span class="text-danger">超时</span></td>
+                            <td>
+                                <div class="progress" style="height:6px;width:80px;">
+                                    <div class="progress-bar bg-danger" style="width:0%;"></div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">传感器 #305</td>
+                            <td><span class="badge" style="background:#1e3a5f;">传感器</span></td>
+                            <td>学府路-高新路</td>
+                            <td><span class="badge bg-warning text-dark"><i class="bi bi-circle-fill me-1" style="font-size:0.5rem;"></i>延迟</span></td>
+                            <td>2,150</td>
+                            <td>6分钟前</td>
+                            <td><span class="text-warning">延迟</span></td>
+                            <td>
+                                <div class="progress" style="height:6px;width:80px;">
+                                    <div class="progress-bar bg-warning" style="width:88%;"></div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">API源 #401</td>
+                            <td><span class="badge" style="background:#667eea;">API</span></td>
+                            <td>天气数据</td>
+                            <td><span class="badge bg-success"><i class="bi bi-circle-fill me-1" style="font-size:0.5rem;"></i>在线</span></td>
+                            <td>96</td>
+                            <td>10分钟前</td>
+                            <td><span class="text-success">正常</span></td>
+                            <td>
+                                <div class="progress" style="height:6px;width:80px;">
+                                    <div class="progress-bar bg-success" style="width:100%;"></div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Ingestion Rate Chart
+    const ingChart = echarts.init(document.getElementById('ingestionChart'));
+    const hours = [];
+    const sensorData = [];
+    const cameraData = [];
+    const apiData = [];
+    for (let i = 0; i < 24; i++) {
+        hours.push(`${String(i).padStart(2,'0')}:00`);
+        if (i <= 10) {
+            sensorData.push(Math.round(400 + Math.random() * 200 + (i >= 7 ? 200 : 0)));
+            cameraData.push(Math.round(250 + Math.random() * 150 + (i >= 7 ? 150 : 0)));
+            apiData.push(Math.round(3 + Math.random() * 2));
+        } else {
+            sensorData.push(null);
+            cameraData.push(null);
+            apiData.push(null);
+        }
+    }
+    ingChart.setOption({
+        tooltip: { trigger: 'axis' },
+        legend: { data: ['传感器', '摄像头', 'API'], top: 0 },
+        grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+        xAxis: { type: 'category', data: hours },
+        yAxis: { type: 'value', name: '记录数/小时' },
+        series: [
+            { name: '传感器', type: 'bar', stack: 'total', data: sensorData, itemStyle: { color: '#1e3a5f' } },
+            { name: '摄像头', type: 'bar', stack: 'total', data: cameraData, itemStyle: { color: '#4ECDC4' } },
+            { name: 'API', type: 'bar', stack: 'total', data: apiData, itemStyle: { color: '#667eea' } }
+        ]
+    });
+    window.addEventListener('resize', () => ingChart.resize());
+</script>
+{% endblock %}

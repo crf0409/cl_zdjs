@@ -1,0 +1,224 @@
+{% extends 'base.html' %}
+
+{% block title %}预测模型管理 - 智能交通流量预测系统{% endblock %}
+
+{% block nav_model %}active{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item active">预测模型管理</li>
+{% endblock %}
+
+{% block content %}
+<div id="modelListApp">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0" style="font-weight:700;color:#1e3a5f;">
+            <i class="bi bi-cpu me-2"></i>预测模型管理
+        </h4>
+        <div>
+            <a href="{% url 'model_train' %}" class="btn text-white me-2" style="background:#1e3a5f;">
+                <i class="bi bi-plus-lg me-1"></i>训练新模型
+            </a>
+            <a href="{% url 'model_compare' %}" class="btn btn-outline-primary">
+                <i class="bi bi-arrow-left-right me-1"></i>模型对比
+            </a>
+        </div>
+    </div>
+
+    <!-- Model Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-start border-4 border-primary">
+                <div class="card-body py-3">
+                    <small class="text-muted">总模型数</small>
+                    <h4 class="fw-bold mb-0" style="color:#1e3a5f;">15</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-start border-4" style="border-color:#4ECDC4 !important;">
+                <div class="card-body py-3">
+                    <small class="text-muted">已部署</small>
+                    <h4 class="fw-bold mb-0" style="color:#4ECDC4;">8</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-start border-4 border-warning">
+                <div class="card-body py-3">
+                    <small class="text-muted">训练中</small>
+                    <h4 class="fw-bold mb-0" style="color:#ffc107;">2</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-start border-4 border-success">
+                <div class="card-body py-3">
+                    <small class="text-muted">最佳R²</small>
+                    <h4 class="fw-bold mb-0" style="color:#198754;">0.956</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Model Cards -->
+    <div class="card">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-bold">模型列表</h6>
+            <div class="btn-group btn-group-sm">
+                <button class="btn btn-outline-secondary active" onclick="switchView('table')"><i class="bi bi-list"></i></button>
+                <button class="btn btn-outline-secondary" onclick="switchView('card')"><i class="bi bi-grid"></i></button>
+            </div>
+        </div>
+        <div class="card-body p-0" id="tableView">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>模型名称</th>
+                            <th>类型</th>
+                            <th>版本</th>
+                            <th>状态</th>
+                            <th>MAE</th>
+                            <th>RMSE</th>
+                            <th>R²</th>
+                            <th>创建时间</th>
+                            <th style="width:160px;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for model in models %}
+                        <tr>
+                            <td class="fw-bold">{{ model.name }}</td>
+                            <td>{{ model.model_type }}</td>
+                            <td>{{ model.version }}</td>
+                            <td>
+                                {% if model.status == 'deployed' %}
+                                <span class="badge bg-primary">已部署</span>
+                                {% elif model.status == 'completed' %}
+                                <span class="badge bg-success">已完成</span>
+                                {% elif model.status == 'training' %}
+                                <span class="badge bg-warning text-dark">训练中</span>
+                                {% else %}
+                                <span class="badge bg-danger">失败</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ model.mae }}</td>
+                            <td>{{ model.rmse }}</td>
+                            <td>{{ model.r2 }}</td>
+                            <td>{{ model.created_at|date:"Y-m-d" }}</td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-outline-info me-1"><i class="bi bi-eye"></i></a>
+                                <a href="#" class="btn btn-sm btn-outline-success me-1"><i class="bi bi-rocket"></i></a>
+                                <a href="#" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td class="fw-bold">LSTM 交通预测模型</td>
+                            <td><span class="badge" style="background:#1e3a5f;">LSTM</span></td>
+                            <td>v2.1</td>
+                            <td><span class="badge bg-primary">已部署</span></td>
+                            <td>45.2</td>
+                            <td>62.8</td>
+                            <td><span class="fw-bold text-success">0.956</span></td>
+                            <td>2026-02-20</td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-outline-info me-1" title="查看"><i class="bi bi-eye"></i></a>
+                                <a href="#" class="btn btn-sm btn-outline-success me-1" title="部署"><i class="bi bi-rocket"></i></a>
+                                <a href="#" class="btn btn-sm btn-outline-danger" title="删除"><i class="bi bi-trash"></i></a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">CNN-LSTM 混合模型</td>
+                            <td><span class="badge" style="background:#4ECDC4;">LSTM+CNN</span></td>
+                            <td>v1.3</td>
+                            <td><span class="badge bg-primary">已部署</span></td>
+                            <td>42.1</td>
+                            <td>58.3</td>
+                            <td><span class="fw-bold text-success">0.962</span></td>
+                            <td>2026-02-18</td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-outline-info me-1"><i class="bi bi-eye"></i></a>
+                                <a href="#" class="btn btn-sm btn-outline-success me-1"><i class="bi bi-rocket"></i></a>
+                                <a href="#" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">CNN 时空特征模型</td>
+                            <td><span class="badge" style="background:#667eea;">CNN</span></td>
+                            <td>v1.0</td>
+                            <td><span class="badge bg-success">已完成</span></td>
+                            <td>52.6</td>
+                            <td>71.5</td>
+                            <td><span class="fw-bold text-warning">0.938</span></td>
+                            <td>2026-02-15</td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-outline-info me-1"><i class="bi bi-eye"></i></a>
+                                <a href="#" class="btn btn-sm btn-outline-success me-1"><i class="bi bi-rocket"></i></a>
+                                <a href="#" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">协同预测模型</td>
+                            <td><span class="badge" style="background:#FF6B6B;">协同</span></td>
+                            <td>v1.0</td>
+                            <td><span class="badge bg-warning text-dark">
+                                <span class="spinner-border spinner-border-sm me-1" style="width:12px;height:12px;"></span>训练中
+                            </span></td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>2026-02-27</td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-outline-info me-1"><i class="bi bi-eye"></i></a>
+                                <button class="btn btn-sm btn-outline-secondary me-1" disabled><i class="bi bi-rocket"></i></button>
+                                <a href="#" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">LSTM 基础模型</td>
+                            <td><span class="badge" style="background:#1e3a5f;">LSTM</span></td>
+                            <td>v1.0</td>
+                            <td><span class="badge bg-danger">失败</span></td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>2026-02-10</td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-outline-info me-1"><i class="bi bi-eye"></i></a>
+                                <button class="btn btn-sm btn-outline-secondary me-1" disabled><i class="bi bi-rocket"></i></button>
+                                <a href="#" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">LSTM 高级预测模型</td>
+                            <td><span class="badge" style="background:#1e3a5f;">LSTM</span></td>
+                            <td>v2.0</td>
+                            <td><span class="badge bg-success">已完成</span></td>
+                            <td>48.5</td>
+                            <td>66.2</td>
+                            <td><span class="fw-bold text-success">0.948</span></td>
+                            <td>2026-02-12</td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-outline-info me-1"><i class="bi bi-eye"></i></a>
+                                <a href="#" class="btn btn-sm btn-outline-success me-1"><i class="bi bi-rocket"></i></a>
+                                <a href="#" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function switchView(view) {
+        // Toggle between table and card view
+        console.log('Switching to:', view);
+    }
+</script>
+{% endblock %}

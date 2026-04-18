@@ -1,0 +1,227 @@
+{% extends 'base.html' %}
+
+{% block title %}交通热力图 - 智能交通流量预测系统{% endblock %}
+
+{% block nav_visualization %}active{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{% url 'flow_chart' %}">数据可视化</a></li>
+<li class="breadcrumb-item active">热力图</li>
+{% endblock %}
+
+{% block content %}
+<div id="heatmapApp">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0" style="font-weight:700;color:#1e3a5f;">
+            <i class="bi bi-grid-3x3-gap me-2"></i>交通密度热力图
+        </h4>
+        <div class="btn-group btn-group-sm">
+            <a href="{% url 'flow_chart' %}" class="btn btn-outline-primary">流量图</a>
+            <a href="{% url 'heatmap' %}" class="btn btn-outline-primary active">热力图</a>
+            <a href="{% url 'comparison' %}" class="btn btn-outline-primary">对比分析</a>
+            <a href="{% url 'analysis' %}" class="btn btn-outline-primary">多维分析</a>
+        </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">监测位置</label>
+                    <select class="form-select" id="locationSelect">
+                        <option value="loc1">中山路-解放路交叉口</option>
+                        <option value="loc2">人民大道-建设路交叉口</option>
+                        <option value="loc3">科技路-创新大道交叉口</option>
+                        <option value="loc4">学府路-高新路交叉口</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">数据类型</label>
+                    <select class="form-select" id="dataType">
+                        <option value="total">总流量</option>
+                        <option value="vehicle">机动车流量</option>
+                        <option value="pedestrian">行人流量</option>
+                        <option value="speed">平均车速</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-bold">时间范围</label>
+                    <select class="form-select" id="timeRange">
+                        <option value="1w">近1周</option>
+                        <option value="2w">近2周</option>
+                        <option value="1m">近1月</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <button class="btn text-white" style="background:#1e3a5f;" onclick="updateHeatmap()">
+                        <i class="bi bi-arrow-clockwise me-1"></i>更新
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Heatmap -->
+    <div class="card mb-4">
+        <div class="card-header bg-white py-3">
+            <h6 class="mb-0 fw-bold"><i class="bi bi-grid-3x3 me-2"></i>时间-星期 交通密度热力图</h6>
+        </div>
+        <div class="card-body">
+            <div id="heatmapChart" style="height:500px;"></div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Legend & Interpretation -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-info-circle me-2"></i>热力图解读</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <div style="width:30px;height:20px;background:#313695;border-radius:3px;margin-right:10px;"></div>
+                            <span>低流量（0-500辆/小时）- 通常出现在凌晨时段</span>
+                        </div>
+                        <div class="d-flex align-items-center mb-2">
+                            <div style="width:30px;height:20px;background:#4575b4;border-radius:3px;margin-right:10px;"></div>
+                            <span>较低流量（500-1000辆/小时）- 清晨和深夜时段</span>
+                        </div>
+                        <div class="d-flex align-items-center mb-2">
+                            <div style="width:30px;height:20px;background:#fdae61;border-radius:3px;margin-right:10px;"></div>
+                            <span>中等流量（1000-2000辆/小时）- 非高峰时段</span>
+                        </div>
+                        <div class="d-flex align-items-center mb-2">
+                            <div style="width:30px;height:20px;background:#f46d43;border-radius:3px;margin-right:10px;"></div>
+                            <span>较高流量（2000-2500辆/小时）- 接近高峰</span>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <div style="width:30px;height:20px;background:#a50026;border-radius:3px;margin-right:10px;"></div>
+                            <span>高流量（2500+辆/小时）- 早晚高峰时段</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Peak Analysis -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-lightning me-2"></i>高峰时段分析</h6>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr><th>时段</th><th>平均流量</th><th>峰值流量</th><th>高峰日</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="fw-bold" style="color:#FF6B6B;">早高峰 (07:30-09:30)</td>
+                                <td>2,856</td>
+                                <td>3,420</td>
+                                <td>周一</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold" style="color:#ffc107;">午间 (11:30-13:30)</td>
+                                <td>1,890</td>
+                                <td>2,150</td>
+                                <td>周五</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold" style="color:#FF6B6B;">晚高峰 (17:00-19:00)</td>
+                                <td>3,120</td>
+                                <td>3,850</td>
+                                <td>周五</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold" style="color:#4ECDC4;">夜间低谷 (01:00-05:00)</td>
+                                <td>85</td>
+                                <td>150</td>
+                                <td>周日</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function updateHeatmap() {
+        initHeatmap();
+    }
+
+    function initHeatmap() {
+        const chart = echarts.init(document.getElementById('heatmapChart'));
+        const hours = [];
+        for (let i = 0; i < 24; i++) hours.push(i + ':00');
+        const days = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+
+        // Generate heatmap data: [hour, day, value]
+        const data = [];
+        for (let d = 0; d < 7; d++) {
+            for (let h = 0; h < 24; h++) {
+                let base;
+                const isWeekend = d >= 5;
+                if (h >= 0 && h < 5) {
+                    base = 50 + Math.random() * 80;
+                } else if (h >= 7 && h <= 9) {
+                    base = isWeekend ? 800 + Math.random() * 400 : 2200 + Math.random() * 800;
+                } else if (h >= 11 && h <= 13) {
+                    base = isWeekend ? 1200 + Math.random() * 400 : 1600 + Math.random() * 500;
+                } else if (h >= 17 && h <= 19) {
+                    base = isWeekend ? 1500 + Math.random() * 500 : 2500 + Math.random() * 800;
+                } else if (h >= 5 && h < 7) {
+                    base = 200 + Math.random() * 300;
+                } else if (h >= 20) {
+                    base = 600 + Math.random() * 400;
+                } else {
+                    base = 1000 + Math.random() * 600;
+                }
+                data.push([h, d, Math.round(base)]);
+            }
+        }
+
+        chart.setOption({
+            tooltip: {
+                position: 'top',
+                formatter: function(p) {
+                    return `${days[p.value[1]]} ${hours[p.value[0]]}<br/>流量: <strong>${p.value[2]}</strong> 辆/小时`;
+                }
+            },
+            grid: { left: '8%', right: '12%', bottom: '10%', top: '5%' },
+            xAxis: { type: 'category', data: hours, splitArea: { show: true } },
+            yAxis: { type: 'category', data: days, splitArea: { show: true } },
+            visualMap: {
+                min: 0,
+                max: 3500,
+                calculable: true,
+                orient: 'vertical',
+                right: 0,
+                top: 'center',
+                inRange: {
+                    color: ['#313695', '#4575b4', '#74add1', '#abd9e9', '#fee090', '#fdae61', '#f46d43', '#d73027', '#a50026']
+                }
+            },
+            series: [{
+                name: '交通流量',
+                type: 'heatmap',
+                data: data,
+                label: { show: false },
+                emphasis: {
+                    itemStyle: { shadowBlur: 10, shadowColor: 'rgba(0, 0, 0, 0.5)' }
+                }
+            }]
+        });
+        window.addEventListener('resize', () => chart.resize());
+    }
+
+    initHeatmap();
+</script>
+{% endblock %}

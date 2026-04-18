@@ -1,0 +1,343 @@
+{% extends 'base.html' %}
+
+{% block title %}数据质量 - 智能交通流量预测系统{% endblock %}
+
+{% block nav_data %}active{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{% url 'data_list' %}">交通数据管理</a></li>
+<li class="breadcrumb-item active">数据质量</li>
+{% endblock %}
+
+{% block content %}
+<div id="qualityApp">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0" style="font-weight:700;color:#1e3a5f;">
+            <i class="bi bi-clipboard-check me-2"></i>数据质量仪表板
+        </h4>
+        <div>
+            <button class="btn btn-outline-primary btn-sm me-2">
+                <i class="bi bi-arrow-clockwise me-1"></i>刷新
+            </button>
+            <a href="{% url 'data_clean' %}" class="btn text-white btn-sm" style="background:#1e3a5f;">
+                <i class="bi bi-stars me-1"></i>数据清洗
+            </a>
+        </div>
+    </div>
+
+    <!-- Quality Score Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body py-4">
+                    <div style="width:100px;height:100px;margin:0 auto;" id="completenessGauge"></div>
+                    <h6 class="fw-bold mt-2 mb-0">完整性</h6>
+                    <small class="text-muted">数据完整度评分</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body py-4">
+                    <div style="width:100px;height:100px;margin:0 auto;" id="accuracyGauge"></div>
+                    <h6 class="fw-bold mt-2 mb-0">准确性</h6>
+                    <small class="text-muted">数据准确度评分</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body py-4">
+                    <div style="width:100px;height:100px;margin:0 auto;" id="timelinessGauge"></div>
+                    <h6 class="fw-bold mt-2 mb-0">时效性</h6>
+                    <small class="text-muted">数据更新及时度</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body py-4">
+                    <div style="width:100px;height:100px;margin:0 auto;" id="consistencyGauge"></div>
+                    <h6 class="fw-bold mt-2 mb-0">一致性</h6>
+                    <small class="text-muted">数据一致性评分</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Quality Trend Chart -->
+        <div class="col-lg-8 mb-4">
+            <div class="card">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-graph-up me-2"></i>数据质量趋势</h6>
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn btn-outline-secondary active">近7天</button>
+                        <button class="btn btn-outline-secondary">近30天</button>
+                        <button class="btn btn-outline-secondary">近90天</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="qualityTrendChart" style="height:350px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quality Details -->
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-list-check me-2"></i>质量详情</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span style="font-size:0.85rem;">缺失值比例</span>
+                            <span class="fw-bold" style="color:#ffc107;">2.7%</span>
+                        </div>
+                        <div class="progress" style="height:6px;">
+                            <div class="progress-bar bg-warning" style="width:2.7%;"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span style="font-size:0.85rem;">异常值比例</span>
+                            <span class="fw-bold" style="color:#dc3545;">0.7%</span>
+                        </div>
+                        <div class="progress" style="height:6px;">
+                            <div class="progress-bar bg-danger" style="width:0.7%;"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span style="font-size:0.85rem;">重复数据比例</span>
+                            <span class="fw-bold" style="color:#0dcaf0;">0.1%</span>
+                        </div>
+                        <div class="progress" style="height:6px;">
+                            <div class="progress-bar bg-info" style="width:0.1%;"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span style="font-size:0.85rem;">格式错误比例</span>
+                            <span class="fw-bold" style="color:#FF6B6B;">0.3%</span>
+                        </div>
+                        <div class="progress" style="height:6px;">
+                            <div class="progress-bar" style="width:0.3%;background:#FF6B6B;"></div>
+                        </div>
+                    </div>
+
+                    <hr>
+                    <h6 class="fw-bold mb-2" style="font-size:0.9rem;">各字段完整度</h6>
+                    <table class="table table-sm mb-0" style="font-size:0.85rem;">
+                        <tr><td>timestamp</td><td class="text-end"><span class="badge bg-success">100%</span></td></tr>
+                        <tr><td>location</td><td class="text-end"><span class="badge bg-success">100%</span></td></tr>
+                        <tr><td>vehicle_count</td><td class="text-end"><span class="badge bg-success">99.5%</span></td></tr>
+                        <tr><td>pedestrian_count</td><td class="text-end"><span class="badge bg-warning text-dark">95.2%</span></td></tr>
+                        <tr><td>total_flow</td><td class="text-end"><span class="badge bg-success">99.8%</span></td></tr>
+                        <tr><td>weather</td><td class="text-end"><span class="badge bg-warning text-dark">92.1%</span></td></tr>
+                        <tr><td>temperature</td><td class="text-end"><span class="badge bg-warning text-dark">91.8%</span></td></tr>
+                        <tr><td>avg_speed</td><td class="text-end"><span class="badge bg-danger">85.3%</span></td></tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Source Quality -->
+    <div class="card">
+        <div class="card-header bg-white py-3">
+            <h6 class="mb-0 fw-bold"><i class="bi bi-table me-2"></i>各数据源质量概况</h6>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>数据来源</th>
+                            <th>总记录数</th>
+                            <th>完整性</th>
+                            <th>准确性</th>
+                            <th>时效性</th>
+                            <th>综合评分</th>
+                            <th>状态</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="fw-bold">交通传感器</td>
+                            <td>68,420</td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="progress flex-grow-1 me-2" style="height:6px;">
+                                        <div class="progress-bar bg-success" style="width:98.5%;"></div>
+                                    </div>
+                                    <small class="fw-bold">98.5%</small>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="progress flex-grow-1 me-2" style="height:6px;">
+                                        <div class="progress-bar bg-success" style="width:97.2%;"></div>
+                                    </div>
+                                    <small class="fw-bold">97.2%</small>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="progress flex-grow-1 me-2" style="height:6px;">
+                                        <div class="progress-bar bg-success" style="width:99.1%;"></div>
+                                    </div>
+                                    <small class="fw-bold">99.1%</small>
+                                </div>
+                            </td>
+                            <td><span class="badge bg-success px-3 py-2" style="font-size:0.85rem;">98.3</span></td>
+                            <td><span class="badge bg-success-subtle text-success">优秀</span></td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">智能摄像头</td>
+                            <td>35,180</td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="progress flex-grow-1 me-2" style="height:6px;">
+                                        <div class="progress-bar bg-success" style="width:96.8%;"></div>
+                                    </div>
+                                    <small class="fw-bold">96.8%</small>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="progress flex-grow-1 me-2" style="height:6px;">
+                                        <div class="progress-bar" style="width:93.5%;background:#4ECDC4;"></div>
+                                    </div>
+                                    <small class="fw-bold">93.5%</small>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="progress flex-grow-1 me-2" style="height:6px;">
+                                        <div class="progress-bar bg-success" style="width:97.5%;"></div>
+                                    </div>
+                                    <small class="fw-bold">97.5%</small>
+                                </div>
+                            </td>
+                            <td><span class="badge px-3 py-2" style="font-size:0.85rem;background:#4ECDC4;">95.9</span></td>
+                            <td><span class="badge bg-success-subtle text-success">良好</span></td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">手动录入</td>
+                            <td>12,350</td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="progress flex-grow-1 me-2" style="height:6px;">
+                                        <div class="progress-bar bg-warning" style="width:88.2%;"></div>
+                                    </div>
+                                    <small class="fw-bold">88.2%</small>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="progress flex-grow-1 me-2" style="height:6px;">
+                                        <div class="progress-bar bg-warning" style="width:85.6%;"></div>
+                                    </div>
+                                    <small class="fw-bold">85.6%</small>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="progress flex-grow-1 me-2" style="height:6px;">
+                                        <div class="progress-bar bg-warning" style="width:82.3%;"></div>
+                                    </div>
+                                    <small class="fw-bold">82.3%</small>
+                                </div>
+                            </td>
+                            <td><span class="badge bg-warning text-dark px-3 py-2" style="font-size:0.85rem;">85.4</span></td>
+                            <td><span class="badge bg-warning-subtle text-warning">一般</span></td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">API导入</td>
+                            <td>9,730</td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="progress flex-grow-1 me-2" style="height:6px;">
+                                        <div class="progress-bar bg-success" style="width:95.1%;"></div>
+                                    </div>
+                                    <small class="fw-bold">95.1%</small>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="progress flex-grow-1 me-2" style="height:6px;">
+                                        <div class="progress-bar" style="width:91.8%;background:#4ECDC4;"></div>
+                                    </div>
+                                    <small class="fw-bold">91.8%</small>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="progress flex-grow-1 me-2" style="height:6px;">
+                                        <div class="progress-bar bg-success" style="width:96.2%;"></div>
+                                    </div>
+                                    <small class="fw-bold">96.2%</small>
+                                </div>
+                            </td>
+                            <td><span class="badge px-3 py-2" style="font-size:0.85rem;background:#4ECDC4;">94.4</span></td>
+                            <td><span class="badge bg-success-subtle text-success">良好</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function createGauge(domId, value, color) {
+        const chart = echarts.init(document.getElementById(domId));
+        chart.setOption({
+            series: [{
+                type: 'gauge',
+                startAngle: 200,
+                endAngle: -20,
+                min: 0,
+                max: 100,
+                radius: '100%',
+                pointer: { show: false },
+                progress: { show: true, width: 12, roundCap: true, itemStyle: { color: color } },
+                axisLine: { lineStyle: { width: 12, color: [[1, '#e9ecef']] } },
+                axisTick: { show: false },
+                splitLine: { show: false },
+                axisLabel: { show: false },
+                detail: { valueAnimation: true, fontSize: 20, fontWeight: 'bold', offsetCenter: [0, '0%'], color: color, formatter: '{value}%' },
+                data: [{ value: value }]
+            }]
+        });
+        window.addEventListener('resize', () => chart.resize());
+    }
+
+    createGauge('completenessGauge', 97.3, '#1e3a5f');
+    createGauge('accuracyGauge', 95.8, '#4ECDC4');
+    createGauge('timelinessGauge', 98.1, '#667eea');
+    createGauge('consistencyGauge', 94.5, '#FF6B6B');
+
+    // Quality Trend Chart
+    const trendChart = echarts.init(document.getElementById('qualityTrendChart'));
+    const days = ['02-21', '02-22', '02-23', '02-24', '02-25', '02-26', '02-27'];
+    trendChart.setOption({
+        tooltip: { trigger: 'axis' },
+        legend: { data: ['完整性', '准确性', '时效性', '一致性'], top: 0 },
+        grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+        xAxis: { type: 'category', data: days },
+        yAxis: { type: 'value', min: 85, max: 100, name: '评分(%)' },
+        series: [
+            { name: '完整性', type: 'line', smooth: true, data: [96.5,96.8,97.0,96.9,97.1,97.2,97.3], lineStyle: { color: '#1e3a5f' }, itemStyle: { color: '#1e3a5f' } },
+            { name: '准确性', type: 'line', smooth: true, data: [94.8,95.0,95.2,95.5,95.6,95.7,95.8], lineStyle: { color: '#4ECDC4' }, itemStyle: { color: '#4ECDC4' } },
+            { name: '时效性', type: 'line', smooth: true, data: [97.5,97.8,98.0,97.6,98.0,98.0,98.1], lineStyle: { color: '#667eea' }, itemStyle: { color: '#667eea' } },
+            { name: '一致性', type: 'line', smooth: true, data: [93.8,94.0,94.1,94.2,94.3,94.4,94.5], lineStyle: { color: '#FF6B6B' }, itemStyle: { color: '#FF6B6B' } }
+        ]
+    });
+    window.addEventListener('resize', () => trendChart.resize());
+</script>
+{% endblock %}

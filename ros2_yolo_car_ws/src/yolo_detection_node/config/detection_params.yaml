@@ -1,0 +1,27 @@
+yolo_detector:
+  ros__parameters:
+    model_path: "/home/siton02/md0/crf/cl_zdjs/project1_yolo_obstacle/yolo11s.pt"
+    confidence_threshold: 0.25
+    device: "cuda:0"
+    image_topic: "/camera/image_raw"
+    target_classes:
+      - "person"
+      - "bicycle"
+      - "car"
+      - "motorcycle"
+      - "bus"
+      - "truck"
+      - "traffic light"
+      - "fire hydrant"
+      - "stop sign"
+      - "parking meter"
+      - "bench"
+      - "chair"
+      - "couch"
+      - "dining table"
+      - "bottle"
+      - "backpack"
+      - "umbrella"
+      - "handbag"
+      - "suitcase"
+      - "potted plant"

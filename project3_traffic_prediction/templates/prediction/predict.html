@@ -1,0 +1,297 @@
+{% extends 'base.html' %}
+
+{% block title %}交通预测 - 智能交通流量预测系统{% endblock %}
+
+{% block nav_model %}active{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{% url 'model_list' %}">预测模型管理</a></li>
+<li class="breadcrumb-item active">交通预测</li>
+{% endblock %}
+
+{% block content %}
+<div id="predictApp">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0" style="font-weight:700;color:#1e3a5f;">
+            <i class="bi bi-graph-up-arrow me-2"></i>交通流量预测
+        </h4>
+    </div>
+
+    <div class="row">
+        <!-- Prediction Config -->
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-sliders me-2"></i>预测参数</h6>
+                </div>
+                <div class="card-body">
+                    <form id="predictForm">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">选择模型</label>
+                            <select class="form-select" name="model" v-model="selectedModel">
+                                <option value="">请选择预测模型</option>
+                                <option value="lstm_v2.1">LSTM v2.1 (R²=0.956)</option>
+                                <option value="cnn_lstm_v1.3">CNN-LSTM v1.3 (R²=0.962)</option>
+                                <option value="cnn_v1.0">CNN v1.0 (R²=0.938)</option>
+                                <option value="collaborative_v1.0">协同模型 v1.0 (R²=0.948)</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">监测位置</label>
+                            <select class="form-select" name="location" v-model="selectedLocation">
+                                <option value="">请选择位置</option>
+                                <option value="loc1">中山路-解放路交叉口</option>
+                                <option value="loc2">人民大道-建设路交叉口</option>
+                                <option value="loc3">科技路-创新大道交叉口</option>
+                                <option value="loc4">学府路-高新路交叉口</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">预测日期</label>
+                            <input type="date" class="form-control" name="date" v-model="predictDate">
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <label class="form-label fw-bold">开始时间</label>
+                                <input type="time" class="form-control" name="start_time" v-model="startTime">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-bold">结束时间</label>
+                                <input type="time" class="form-control" name="end_time" v-model="endTime">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">预测间隔</label>
+                            <select class="form-select" name="interval" v-model="interval">
+                                <option value="15">15分钟</option>
+                                <option value="30">30分钟</option>
+                                <option value="60">1小时</option>
+                            </select>
+                        </div>
+
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="showConfidence" v-model="showConfidence">
+                            <label class="form-check-label" for="showConfidence">显示置信区间</label>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="button" class="btn text-white" style="background:#1e3a5f;"
+                                    @click="runPrediction" :disabled="predicting">
+                                <span v-if="!predicting"><i class="bi bi-play-fill me-1"></i>开始预测</span>
+                                <span v-else><span class="spinner-border spinner-border-sm me-1"></span>预测中...</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Prediction Results -->
+        <div class="col-lg-8">
+            <!-- Results Chart -->
+            <div class="card mb-4">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-bar-chart-line me-2"></i>预测结果</h6>
+                    <button class="btn btn-sm btn-outline-success" v-if="hasResults" @click="exportResults">
+                        <i class="bi bi-download me-1"></i>导出结果
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div id="predictionChart" style="height:350px;"></div>
+                </div>
+            </div>
+
+            <!-- Results Summary -->
+            <div class="row mb-4" v-if="hasResults">
+                <div class="col-md-3">
+                    <div class="card text-center" style="border-top:3px solid #1e3a5f;">
+                        <div class="card-body py-3">
+                            <small class="text-muted">平均预测流量</small>
+                            <h4 class="fw-bold mb-0" style="color:#1e3a5f;">[[ summary.avgFlow ]]</h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center" style="border-top:3px solid #FF6B6B;">
+                        <div class="card-body py-3">
+                            <small class="text-muted">峰值流量</small>
+                            <h4 class="fw-bold mb-0" style="color:#FF6B6B;">[[ summary.peakFlow ]]</h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center" style="border-top:3px solid #4ECDC4;">
+                        <div class="card-body py-3">
+                            <small class="text-muted">峰值时间</small>
+                            <h4 class="fw-bold mb-0" style="color:#4ECDC4;">[[ summary.peakTime ]]</h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center" style="border-top:3px solid #667eea;">
+                        <div class="card-body py-3">
+                            <small class="text-muted">置信度</small>
+                            <h4 class="fw-bold mb-0" style="color:#667eea;">[[ summary.confidence ]]</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Results Table -->
+            <div class="card" v-if="hasResults">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-table me-2"></i>详细预测数据</h6>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive" style="max-height:300px;overflow-y:auto;">
+                        <table class="table table-hover table-sm mb-0">
+                            <thead class="table-light" style="position:sticky;top:0;">
+                                <tr>
+                                    <th>时间</th>
+                                    <th>预测流量</th>
+                                    <th>置信下限</th>
+                                    <th>置信上限</th>
+                                    <th>拥堵等级</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="r in results" :key="r.time">
+                                    <td>[[ r.time ]]</td>
+                                    <td class="fw-bold">[[ r.predicted ]]</td>
+                                    <td class="text-muted">[[ r.lower ]]</td>
+                                    <td class="text-muted">[[ r.upper ]]</td>
+                                    <td>
+                                        <span :class="getCongestionClass(r.predicted)">[[ getCongestionLevel(r.predicted) ]]</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const { createApp } = Vue;
+
+createApp({
+    delimiters: ['[[', ']]'],
+    data() {
+        return {
+            selectedModel: '',
+            selectedLocation: '',
+            predictDate: '2026-02-28',
+            startTime: '06:00',
+            endTime: '22:00',
+            interval: '30',
+            showConfidence: true,
+            predicting: false,
+            hasResults: false,
+            chart: null,
+            results: [],
+            summary: {
+                avgFlow: '1,856',
+                peakFlow: '3,210',
+                peakTime: '08:30',
+                confidence: '95.2%'
+            }
+        };
+    },
+    mounted() {
+        this.chart = echarts.init(document.getElementById('predictionChart'));
+        this.chart.setOption({
+            graphic: { elements: [{ type: 'text', left: 'center', top: 'middle', style: { text: '设置参数后点击"开始预测"查看结果', fill: '#ccc', fontSize: 14 } }] }
+        });
+        window.addEventListener('resize', () => this.chart && this.chart.resize());
+    },
+    methods: {
+        runPrediction() {
+            this.predicting = true;
+            setTimeout(() => {
+                this.generateResults();
+                this.updateChart();
+                this.hasResults = true;
+                this.predicting = false;
+            }, 1500);
+        },
+        generateResults() {
+            this.results = [];
+            const start = parseInt(this.startTime.split(':')[0]);
+            const end = parseInt(this.endTime.split(':')[0]);
+            const intv = parseInt(this.interval);
+
+            for (let h = start; h <= end; h++) {
+                for (let m = 0; m < 60; m += intv) {
+                    if (h === end && m > 0) break;
+                    const time = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+                    const base = 200 + 2500 * Math.sin(Math.PI * (h - 4) / 14) * (h >= 6 && h <= 22 ? 1 : 0.15);
+                    const predicted = Math.max(50, Math.round(base + (Math.random() - 0.5) * 300));
+                    const lower = Math.round(predicted * 0.88);
+                    const upper = Math.round(predicted * 1.12);
+                    this.results.push({ time, predicted, lower, upper });
+                }
+            }
+        },
+        updateChart() {
+            const times = this.results.map(r => r.time);
+            const values = this.results.map(r => r.predicted);
+            const lowers = this.results.map(r => r.lower);
+            const uppers = this.results.map(r => r.upper);
+
+            const series = [
+                {
+                    name: '预测流量',
+                    type: 'line',
+                    data: values,
+                    smooth: true,
+                    lineStyle: { color: '#1e3a5f', width: 3 },
+                    itemStyle: { color: '#1e3a5f' },
+                    markPoint: { data: [{ type: 'max', name: '峰值' }] }
+                }
+            ];
+
+            if (this.showConfidence) {
+                series.push(
+                    { name: '置信上限', type: 'line', data: uppers, smooth: true, lineStyle: { opacity: 0 }, symbol: 'none', stack: 'confidence' },
+                    { name: '置信区间', type: 'line', data: lowers.map((v, i) => uppers[i] - v), smooth: true, lineStyle: { opacity: 0 }, symbol: 'none', stack: 'confidence', areaStyle: { color: 'rgba(30,58,95,0.12)' } }
+                );
+            }
+
+            this.chart.setOption({
+                tooltip: { trigger: 'axis' },
+                legend: { data: ['预测流量'], top: 0 },
+                grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+                xAxis: { type: 'category', data: times },
+                yAxis: { type: 'value', name: '流量（辆/时段）' },
+                series: series
+            }, true);
+        },
+        getCongestionLevel(flow) {
+            if (flow > 2500) return '严重拥堵';
+            if (flow > 2000) return '中度拥堵';
+            if (flow > 1500) return '轻度拥堵';
+            return '畅通';
+        },
+        getCongestionClass(flow) {
+            if (flow > 2500) return 'badge bg-danger';
+            if (flow > 2000) return 'badge bg-warning text-dark';
+            if (flow > 1500) return 'badge bg-info';
+            return 'badge bg-success';
+        },
+        exportResults() {
+            alert('预测结果将导出为CSV文件');
+        }
+    }
+}).mount('#predictApp');
+</script>
+{% endblock %}

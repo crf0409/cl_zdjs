@@ -1,0 +1,2 @@
+[console_scripts]
+obstacle_avoidance = obstacle_avoidance_node.avoidance_node:main

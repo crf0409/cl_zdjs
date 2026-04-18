@@ -1,0 +1,250 @@
+{% extends 'base.html' %}
+
+{% block title %}模型监控 - 智能交通流量预测系统{% endblock %}
+
+{% block nav_monitor %}active{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{% url 'system_status' %}">系统监控</a></li>
+<li class="breadcrumb-item active">模型监控</li>
+{% endblock %}
+
+{% block content %}
+<div id="modelMonitorApp">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0" style="font-weight:700;color:#1e3a5f;">
+            <i class="bi bi-cpu me-2"></i>模型性能监控
+        </h4>
+        <div>
+            <a href="{% url 'system_status' %}" class="btn btn-outline-secondary btn-sm me-1">系统监控</a>
+            <a href="{% url 'data_monitor' %}" class="btn btn-outline-primary btn-sm">数据监控</a>
+        </div>
+    </div>
+
+    <!-- Deployed Models Status -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-start border-4 border-success">
+                <div class="card-body py-3">
+                    <small class="text-muted">已部署模型</small>
+                    <h4 class="fw-bold mb-0" style="color:#198754;">8</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-start border-4 border-primary">
+                <div class="card-body py-3">
+                    <small class="text-muted">平均R²</small>
+                    <h4 class="fw-bold mb-0" style="color:#1e3a5f;">0.952</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-start border-4 border-warning">
+                <div class="card-body py-3">
+                    <small class="text-muted">漂移告警</small>
+                    <h4 class="fw-bold mb-0" style="color:#ffc107;">2</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-start border-4" style="border-color:#4ECDC4 !important;">
+                <div class="card-body py-3">
+                    <small class="text-muted">今日预测次数</small>
+                    <h4 class="fw-bold mb-0" style="color:#4ECDC4;">1,256</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Over Time -->
+    <div class="card mb-4">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-bold"><i class="bi bi-graph-up me-2"></i>模型精度趋势（R²）</h6>
+            <select class="form-select form-select-sm" style="width:200px;" id="modelSelect">
+                <option value="all">全部模型</option>
+                <option value="cnn_lstm">CNN-LSTM v1.3</option>
+                <option value="lstm">LSTM v2.1</option>
+                <option value="cnn">CNN v1.0</option>
+            </select>
+        </div>
+        <div class="card-body">
+            <div id="performanceChart" style="height:350px;"></div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Drift Detection -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-exclamation-triangle me-2"></i>漂移检测告警</h6>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <span class="badge bg-danger me-2">严重</span>
+                                    <strong>CNN v1.0</strong>
+                                    <p class="mb-0 text-muted mt-1" style="font-size:0.85rem;">
+                                        检测到概念漂移：近7天R²下降0.035，MAPE上升1.2%。数据分布与训练集产生显著偏差。
+                                    </p>
+                                    <small class="text-muted">2026-02-27 09:30 | 建议：使用最新数据重新训练</small>
+                                </div>
+                                <button class="btn btn-sm btn-outline-primary">处理</button>
+                            </div>
+                        </div>
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <span class="badge bg-warning text-dark me-2">警告</span>
+                                    <strong>LSTM v2.1</strong>
+                                    <p class="mb-0 text-muted mt-1" style="font-size:0.85rem;">
+                                        预测偏差增加：周末预测精度下降，MAPE从3.2%升至4.8%。
+                                    </p>
+                                    <small class="text-muted">2026-02-26 15:20 | 建议：检查周末数据分布</small>
+                                </div>
+                                <button class="btn btn-sm btn-outline-primary">处理</button>
+                            </div>
+                        </div>
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <span class="badge bg-info me-2">信息</span>
+                                    <strong>CNN-LSTM v1.3</strong>
+                                    <p class="mb-0 text-muted mt-1" style="font-size:0.85rem;">
+                                        模型性能稳定，各项指标在正常范围内。
+                                    </p>
+                                    <small class="text-muted">2026-02-27 10:00 | 无需操作</small>
+                                </div>
+                                <span class="badge bg-success">正常</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Prediction Accuracy by Model -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-speedometer me-2"></i>各模型当前精度</h6>
+                </div>
+                <div class="card-body">
+                    <div id="modelAccuracyChart" style="height:350px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Model Details Table -->
+    <div class="card">
+        <div class="card-header bg-white py-3">
+            <h6 class="mb-0 fw-bold"><i class="bi bi-table me-2"></i>已部署模型详细状态</h6>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>模型</th>
+                            <th>版本</th>
+                            <th>当前R²</th>
+                            <th>R²变化</th>
+                            <th>MAPE</th>
+                            <th>今日预测数</th>
+                            <th>平均延迟</th>
+                            <th>漂移状态</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="fw-bold">CNN-LSTM 混合模型</td>
+                            <td>v1.3</td>
+                            <td><span class="fw-bold text-success">0.962</span></td>
+                            <td><span class="text-success"><i class="bi bi-arrow-up"></i> +0.001</span></td>
+                            <td>3.8%</td>
+                            <td>456</td>
+                            <td>12ms</td>
+                            <td><span class="badge bg-success">稳定</span></td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">LSTM 预测模型</td>
+                            <td>v2.1</td>
+                            <td><span class="fw-bold text-success">0.956</span></td>
+                            <td><span class="text-warning"><i class="bi bi-arrow-down"></i> -0.008</span></td>
+                            <td>4.2%</td>
+                            <td>389</td>
+                            <td>8ms</td>
+                            <td><span class="badge bg-warning text-dark">关注</span></td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">CNN 时空模型</td>
+                            <td>v1.0</td>
+                            <td><span class="fw-bold text-warning">0.903</span></td>
+                            <td><span class="text-danger"><i class="bi bi-arrow-down"></i> -0.035</span></td>
+                            <td>6.5%</td>
+                            <td>211</td>
+                            <td>15ms</td>
+                            <td><span class="badge bg-danger">漂移</span></td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">LSTM 高级模型</td>
+                            <td>v2.0</td>
+                            <td><span class="fw-bold text-success">0.948</span></td>
+                            <td><span class="text-success"><i class="bi bi-arrow-up"></i> +0.002</span></td>
+                            <td>4.5%</td>
+                            <td>200</td>
+                            <td>9ms</td>
+                            <td><span class="badge bg-success">稳定</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Performance Over Time
+    const perfChart = echarts.init(document.getElementById('performanceChart'));
+    const days = [];
+    for (let i = 1; i <= 28; i++) days.push(`02/${String(i).padStart(2,'0')}`);
+
+    const genR2 = (base, drift) => days.map((_, i) => (base + (Math.random() - 0.5) * 0.01 - drift * i / 28).toFixed(3));
+
+    perfChart.setOption({
+        tooltip: { trigger: 'axis' },
+        legend: { data: ['CNN-LSTM v1.3', 'LSTM v2.1', 'CNN v1.0'], top: 0 },
+        grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+        xAxis: { type: 'category', data: days },
+        yAxis: { type: 'value', name: 'R²', min: 0.88, max: 0.98 },
+        series: [
+            { name: 'CNN-LSTM v1.3', type: 'line', data: genR2(0.962, 0), smooth: true, lineStyle: { color: '#1e3a5f', width: 2 }, itemStyle: { color: '#1e3a5f' } },
+            { name: 'LSTM v2.1', type: 'line', data: genR2(0.956, 0.005), smooth: true, lineStyle: { color: '#4ECDC4', width: 2 }, itemStyle: { color: '#4ECDC4' } },
+            { name: 'CNN v1.0', type: 'line', data: genR2(0.938, 0.03), smooth: true, lineStyle: { color: '#FF6B6B', width: 2 }, itemStyle: { color: '#FF6B6B' } }
+        ]
+    });
+
+    // Model Accuracy Comparison
+    const accChart = echarts.init(document.getElementById('modelAccuracyChart'));
+    accChart.setOption({
+        tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+        legend: { data: ['MAE', 'RMSE', 'MAPE(x10)'], top: 0 },
+        grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+        xAxis: { type: 'category', data: ['CNN-LSTM\nv1.3', 'LSTM\nv2.1', 'CNN\nv1.0', 'LSTM\nv2.0'] },
+        yAxis: { type: 'value' },
+        series: [
+            { name: 'MAE', type: 'bar', data: [42.1, 45.2, 52.6, 48.5], itemStyle: { color: '#1e3a5f', borderRadius: [4,4,0,0] } },
+            { name: 'RMSE', type: 'bar', data: [58.3, 62.8, 71.5, 66.2], itemStyle: { color: '#4ECDC4', borderRadius: [4,4,0,0] } },
+            { name: 'MAPE(x10)', type: 'bar', data: [38, 42, 65, 45], itemStyle: { color: '#FF6B6B', borderRadius: [4,4,0,0] } }
+        ]
+    });
+
+    window.addEventListener('resize', () => { perfChart.resize(); accChart.resize(); });
+</script>
+{% endblock %}

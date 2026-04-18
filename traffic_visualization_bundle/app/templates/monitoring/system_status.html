@@ -1,0 +1,272 @@
+{% extends 'base.html' %}
+
+{% block title %}系统监控 - 智能交通流量预测系统{% endblock %}
+
+{% block nav_monitor %}active{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item active">系统监控</li>
+{% endblock %}
+
+{% block content %}
+<div id="monitorApp">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0" style="font-weight:700;color:#1e3a5f;">
+            <i class="bi bi-activity me-2"></i>系统监控
+        </h4>
+        <div>
+            <a href="{% url 'model_monitor' %}" class="btn btn-outline-primary btn-sm me-1">模型监控</a>
+            <a href="{% url 'data_monitor' %}" class="btn btn-outline-primary btn-sm me-1">数据监控</a>
+            <button class="btn btn-outline-success btn-sm" onclick="refreshAll()">
+                <i class="bi bi-arrow-clockwise me-1"></i>刷新
+            </button>
+        </div>
+    </div>
+
+    <!-- System Overview -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center py-3">
+                    <div id="cpuGauge" style="height:160px;"></div>
+                    <h6 class="fw-bold">CPU 使用率</h6>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center py-3">
+                    <div id="memoryGauge" style="height:160px;"></div>
+                    <h6 class="fw-bold">内存使用率</h6>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center py-3">
+                    <div id="diskGauge" style="height:160px;"></div>
+                    <h6 class="fw-bold">磁盘使用率</h6>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center py-3">
+                    <div id="gpuGauge" style="height:160px;"></div>
+                    <h6 class="fw-bold">GPU 使用率</h6>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- API Statistics -->
+        <div class="col-lg-8 mb-4">
+            <div class="card">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-graph-up me-2"></i>API 请求统计</h6>
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn btn-outline-secondary active">24小时</button>
+                        <button class="btn btn-outline-secondary">7天</button>
+                        <button class="btn btn-outline-secondary">30天</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="apiChart" style="height:300px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Info -->
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-server me-2"></i>系统信息</h6>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm mb-0" style="font-size:0.85rem;">
+                        <tr><td class="text-muted">服务器</td><td class="text-end fw-bold">Ubuntu 22.04 LTS</td></tr>
+                        <tr><td class="text-muted">Python</td><td class="text-end fw-bold">3.10.12</td></tr>
+                        <tr><td class="text-muted">Django</td><td class="text-end fw-bold">4.2.8</td></tr>
+                        <tr><td class="text-muted">PyTorch</td><td class="text-end fw-bold">2.1.0</td></tr>
+                        <tr><td class="text-muted">数据库</td><td class="text-end fw-bold">PostgreSQL 15</td></tr>
+                        <tr><td class="text-muted">Redis</td><td class="text-end fw-bold">7.2.1</td></tr>
+                        <tr><td class="text-muted">运行时间</td><td class="text-end fw-bold">45天 12小时</td></tr>
+                        <tr><td class="text-muted">总内存</td><td class="text-end fw-bold">64 GB</td></tr>
+                        <tr><td class="text-muted">GPU</td><td class="text-end fw-bold">NVIDIA A100 40GB</td></tr>
+                        <tr><td class="text-muted">总磁盘</td><td class="text-end fw-bold">2 TB SSD</td></tr>
+                    </table>
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted" style="font-size:0.8rem;">系统状态</span>
+                        <span class="badge bg-success">运行正常</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- API Endpoints & Recent Errors -->
+    <div class="row">
+        <div class="col-lg-5 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-plug me-2"></i>API 端点状态</h6>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm align-middle mb-0">
+                            <thead class="table-light">
+                                <tr><th>端点</th><th>请求数</th><th>平均延迟</th><th>状态</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td><code>/api/predict/</code></td><td>2,456</td><td>85ms</td><td><span class="badge bg-success">正常</span></td></tr>
+                                <tr><td><code>/api/data/</code></td><td>1,823</td><td>42ms</td><td><span class="badge bg-success">正常</span></td></tr>
+                                <tr><td><code>/api/models/</code></td><td>856</td><td>35ms</td><td><span class="badge bg-success">正常</span></td></tr>
+                                <tr><td><code>/api/upload/</code></td><td>128</td><td>1,250ms</td><td><span class="badge bg-warning text-dark">较慢</span></td></tr>
+                                <tr><td><code>/api/report/</code></td><td>245</td><td>2,800ms</td><td><span class="badge bg-warning text-dark">较慢</span></td></tr>
+                                <tr><td><code>/api/auth/</code></td><td>3,126</td><td>28ms</td><td><span class="badge bg-success">正常</span></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-7 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-exclamation-triangle me-2"></i>最近错误/警告日志</h6>
+                    <span class="badge bg-danger">5 条未处理</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive" style="max-height:350px;overflow-y:auto;">
+                        <table class="table table-hover table-sm align-middle mb-0">
+                            <thead class="table-light" style="position:sticky;top:0;">
+                                <tr><th>时间</th><th>级别</th><th>模块</th><th>描述</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="white-space:nowrap;">10:25:03</td>
+                                    <td><span class="badge bg-danger">错误</span></td>
+                                    <td>prediction</td>
+                                    <td>GPU内存不足，模型推理回退到CPU</td>
+                                </tr>
+                                <tr>
+                                    <td style="white-space:nowrap;">10:15:22</td>
+                                    <td><span class="badge bg-warning text-dark">警告</span></td>
+                                    <td>data_sync</td>
+                                    <td>传感器 #127 数据延迟超过5分钟</td>
+                                </tr>
+                                <tr>
+                                    <td style="white-space:nowrap;">09:58:41</td>
+                                    <td><span class="badge bg-warning text-dark">警告</span></td>
+                                    <td>api</td>
+                                    <td>API请求频率超过阈值(100/min)，已限流</td>
+                                </tr>
+                                <tr>
+                                    <td style="white-space:nowrap;">09:45:10</td>
+                                    <td><span class="badge bg-danger">错误</span></td>
+                                    <td>database</td>
+                                    <td>数据库连接池用尽，等待连接释放</td>
+                                </tr>
+                                <tr>
+                                    <td style="white-space:nowrap;">09:30:05</td>
+                                    <td><span class="badge bg-warning text-dark">警告</span></td>
+                                    <td>training</td>
+                                    <td>模型训练验证损失出现回升趋势</td>
+                                </tr>
+                                <tr>
+                                    <td style="white-space:nowrap;">09:12:33</td>
+                                    <td><span class="badge bg-info">信息</span></td>
+                                    <td>system</td>
+                                    <td>自动备份任务完成，备份大小: 2.3GB</td>
+                                </tr>
+                                <tr>
+                                    <td style="white-space:nowrap;">08:55:18</td>
+                                    <td><span class="badge bg-danger">错误</span></td>
+                                    <td>data_ingestion</td>
+                                    <td>摄像头 #45 连接超时</td>
+                                </tr>
+                                <tr>
+                                    <td style="white-space:nowrap;">08:30:00</td>
+                                    <td><span class="badge bg-info">信息</span></td>
+                                    <td>scheduler</td>
+                                    <td>定时预测任务执行完成</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function createGauge(domId, value, title, color) {
+        const chart = echarts.init(document.getElementById(domId));
+        chart.setOption({
+            series: [{
+                type: 'gauge',
+                startAngle: 200,
+                endAngle: -20,
+                min: 0,
+                max: 100,
+                radius: '90%',
+                pointer: { show: true, length: '55%', width: 4, itemStyle: { color: color } },
+                progress: { show: true, width: 14, roundCap: true, itemStyle: { color: color } },
+                axisLine: { lineStyle: { width: 14, color: [[1, '#e9ecef']] } },
+                axisTick: { show: false },
+                splitLine: { show: false },
+                axisLabel: { show: false },
+                detail: { valueAnimation: true, fontSize: 22, fontWeight: 'bold', offsetCenter: [0, '20%'], color: color, formatter: '{value}%' },
+                data: [{ value: value }]
+            }]
+        });
+        window.addEventListener('resize', () => chart.resize());
+    }
+
+    createGauge('cpuGauge', 45, 'CPU', '#4ECDC4');
+    createGauge('memoryGauge', 68, '内存', '#1e3a5f');
+    createGauge('diskGauge', 52, '磁盘', '#667eea');
+    createGauge('gpuGauge', 35, 'GPU', '#FF6B6B');
+
+    // API Chart
+    const apiChart = echarts.init(document.getElementById('apiChart'));
+    const hours = [];
+    const requests = [];
+    const errors = [];
+    const latency = [];
+    for (let i = 0; i < 24; i++) {
+        hours.push(`${String(i).padStart(2,'0')}:00`);
+        const base = (i >= 8 && i <= 18) ? 300 + Math.random() * 200 : 50 + Math.random() * 100;
+        requests.push(Math.round(base));
+        errors.push(Math.round(base * 0.02 + Math.random() * 3));
+        latency.push(Math.round(40 + Math.random() * 60 + (i >= 8 && i <= 10 ? 40 : 0)));
+    }
+    apiChart.setOption({
+        tooltip: { trigger: 'axis' },
+        legend: { data: ['请求数', '错误数', '平均延迟(ms)'], top: 0 },
+        grid: { left: '3%', right: '8%', bottom: '3%', containLabel: true },
+        xAxis: { type: 'category', data: hours },
+        yAxis: [
+            { type: 'value', name: '请求数' },
+            { type: 'value', name: '延迟(ms)', position: 'right', splitLine: { show: false } }
+        ],
+        series: [
+            { name: '请求数', type: 'bar', data: requests, itemStyle: { color: '#1e3a5f', borderRadius: [4,4,0,0], opacity: 0.7 } },
+            { name: '错误数', type: 'bar', data: errors, itemStyle: { color: '#FF6B6B', borderRadius: [4,4,0,0] } },
+            { name: '平均延迟(ms)', type: 'line', yAxisIndex: 1, data: latency, smooth: true, lineStyle: { color: '#4ECDC4', width: 2 }, itemStyle: { color: '#4ECDC4' } }
+        ]
+    });
+
+    window.addEventListener('resize', () => apiChart.resize());
+
+    function refreshAll() {
+        location.reload();
+    }
+</script>
+{% endblock %}

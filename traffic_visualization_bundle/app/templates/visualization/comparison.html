@@ -1,0 +1,236 @@
+{% extends 'base.html' %}
+
+{% block title %}预测对比分析 - 智能交通流量预测系统{% endblock %}
+
+{% block nav_visualization %}active{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{% url 'flow_chart' %}">数据可视化</a></li>
+<li class="breadcrumb-item active">对比分析</li>
+{% endblock %}
+
+{% block content %}
+<div id="comparisonApp">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0" style="font-weight:700;color:#1e3a5f;">
+            <i class="bi bi-arrow-left-right me-2"></i>预测 vs 实际对比分析
+        </h4>
+        <div class="btn-group btn-group-sm">
+            <a href="{% url 'flow_chart' %}" class="btn btn-outline-primary">流量图</a>
+            <a href="{% url 'heatmap' %}" class="btn btn-outline-primary">热力图</a>
+            <a href="{% url 'comparison' %}" class="btn btn-outline-primary active">对比分析</a>
+            <a href="{% url 'analysis' %}" class="btn btn-outline-primary">多维分析</a>
+        </div>
+    </div>
+
+    <!-- Metrics Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center" style="border-top:3px solid #1e3a5f;">
+                <div class="card-body py-3">
+                    <small class="text-muted">平均绝对误差 (MAE)</small>
+                    <h3 class="fw-bold mb-0" style="color:#1e3a5f;">42.1</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center" style="border-top:3px solid #4ECDC4;">
+                <div class="card-body py-3">
+                    <small class="text-muted">均方根误差 (RMSE)</small>
+                    <h3 class="fw-bold mb-0" style="color:#4ECDC4;">58.3</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center" style="border-top:3px solid #667eea;">
+                <div class="card-body py-3">
+                    <small class="text-muted">平均百分比误差 (MAPE)</small>
+                    <h3 class="fw-bold mb-0" style="color:#667eea;">3.8%</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center" style="border-top:3px solid #198754;">
+                <div class="card-body py-3">
+                    <small class="text-muted">决定系数 (R²)</small>
+                    <h3 class="fw-bold mb-0" style="color:#198754;">0.962</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Prediction vs Actual Line Chart -->
+    <div class="card mb-4">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-bold"><i class="bi bi-graph-up me-2"></i>预测值 vs 实际值叠加图</h6>
+            <div class="btn-group btn-group-sm">
+                <button class="btn btn-outline-secondary active" onclick="updateOverlay('today')">今日</button>
+                <button class="btn btn-outline-secondary" onclick="updateOverlay('week')">本周</button>
+                <button class="btn btn-outline-secondary" onclick="updateOverlay('month')">本月</button>
+            </div>
+        </div>
+        <div class="card-body">
+            <div id="overlayChart" style="height:380px;"></div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Error Distribution Histogram -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-bar-chart me-2"></i>误差分布直方图</h6>
+                </div>
+                <div class="card-body">
+                    <div id="errorHistogram" style="height:350px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Over Time -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-graph-down me-2"></i>误差时间变化</h6>
+                </div>
+                <div class="card-body">
+                    <div id="errorTimeChart" style="height:350px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scatter Plot -->
+    <div class="card">
+        <div class="card-header bg-white py-3">
+            <h6 class="mb-0 fw-bold"><i class="bi bi-scatter me-2"></i>预测值-实际值散点图</h6>
+        </div>
+        <div class="card-body">
+            <div id="scatterChart" style="height:400px;"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function updateOverlay(period) {
+        // Update chart based on period
+    }
+
+    // Generate sample data
+    const hours = [];
+    const actual = [];
+    const predicted = [];
+    const errors = [];
+    for (let i = 0; i < 48; i++) {
+        const h = Math.floor(i / 2);
+        const m = (i % 2) * 30;
+        hours.push(`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`);
+        const base = 200 + 2500 * Math.sin(Math.PI * (h - 4) / 14) * (h >= 5 && h <= 23 ? 1 : 0.08);
+        const a = Math.max(30, Math.round(base + (Math.random() - 0.5) * 300));
+        const p = Math.max(30, Math.round(a + (Math.random() - 0.5) * 150));
+        actual.push(a);
+        predicted.push(p);
+        errors.push(p - a);
+    }
+
+    // Overlay Chart
+    const overlayChart = echarts.init(document.getElementById('overlayChart'));
+    overlayChart.setOption({
+        tooltip: { trigger: 'axis' },
+        legend: { data: ['实际值', '预测值', '误差'], top: 0 },
+        grid: { left: '3%', right: '8%', bottom: '12%', containLabel: true },
+        dataZoom: [{ type: 'slider', start: 0, end: 100, height: 20, bottom: 5 }],
+        xAxis: { type: 'category', data: hours },
+        yAxis: [
+            { type: 'value', name: '流量', position: 'left' },
+            { type: 'value', name: '误差', position: 'right', splitLine: { show: false } }
+        ],
+        series: [
+            { name: '实际值', type: 'line', data: actual, smooth: true, lineStyle: { color: '#1e3a5f', width: 2 }, itemStyle: { color: '#1e3a5f' } },
+            { name: '预测值', type: 'line', data: predicted, smooth: true, lineStyle: { color: '#4ECDC4', width: 2, type: 'dashed' }, itemStyle: { color: '#4ECDC4' } },
+            { name: '误差', type: 'bar', yAxisIndex: 1, data: errors, itemStyle: { color: function(p) { return p.value > 0 ? 'rgba(255,107,107,0.5)' : 'rgba(78,205,196,0.5)'; } } }
+        ]
+    });
+
+    // Error Histogram
+    const histChart = echarts.init(document.getElementById('errorHistogram'));
+    const bins = ['-200~-150', '-150~-100', '-100~-50', '-50~0', '0~50', '50~100', '100~150', '150~200'];
+    const counts = [2, 4, 8, 14, 12, 6, 3, 1];
+    histChart.setOption({
+        tooltip: { trigger: 'axis' },
+        grid: { left: '8%', right: '5%', bottom: '10%', top: '10%' },
+        xAxis: { type: 'category', data: bins, axisLabel: { rotate: 30 } },
+        yAxis: { type: 'value', name: '频次' },
+        series: [{
+            type: 'bar',
+            data: counts,
+            itemStyle: {
+                color: function(p) {
+                    const colors = ['#4575b4', '#74add1', '#abd9e9', '#e0f3f8', '#fee090', '#fdae61', '#f46d43', '#d73027'];
+                    return colors[p.dataIndex];
+                },
+                borderRadius: [4, 4, 0, 0]
+            },
+            markLine: {
+                data: [{ type: 'average', name: '平均' }],
+                lineStyle: { color: '#FF6B6B', type: 'dashed' }
+            }
+        }]
+    });
+
+    // Error Over Time
+    const errorTimeChart = echarts.init(document.getElementById('errorTimeChart'));
+    const absErrors = errors.map(e => Math.abs(e));
+    errorTimeChart.setOption({
+        tooltip: { trigger: 'axis' },
+        grid: { left: '3%', right: '4%', bottom: '10%', containLabel: true },
+        xAxis: { type: 'category', data: hours },
+        yAxis: { type: 'value', name: '绝对误差' },
+        series: [{
+            type: 'line',
+            data: absErrors,
+            smooth: true,
+            lineStyle: { color: '#FF6B6B', width: 2 },
+            itemStyle: { color: '#FF6B6B' },
+            areaStyle: { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: 'rgba(255,107,107,0.3)' }, { offset: 1, color: 'rgba(255,107,107,0.02)' }] } },
+            markLine: {
+                data: [{ type: 'average', name: '平均误差' }],
+                lineStyle: { color: '#1e3a5f' }
+            }
+        }]
+    });
+
+    // Scatter Plot
+    const scatterChart = echarts.init(document.getElementById('scatterChart'));
+    const scatterData = actual.map((a, i) => [a, predicted[i]]);
+    const maxVal = Math.max(...actual, ...predicted) + 200;
+    scatterChart.setOption({
+        tooltip: { formatter: function(p) { return `实际: ${p.value[0]}<br/>预测: ${p.value[1]}`; } },
+        grid: { left: '5%', right: '5%', bottom: '10%', top: '10%' },
+        xAxis: { type: 'value', name: '实际值', max: maxVal },
+        yAxis: { type: 'value', name: '预测值', max: maxVal },
+        series: [
+            {
+                type: 'scatter',
+                data: scatterData,
+                symbolSize: 8,
+                itemStyle: { color: '#1e3a5f', opacity: 0.6 }
+            },
+            {
+                type: 'line',
+                data: [[0, 0], [maxVal, maxVal]],
+                lineStyle: { color: '#FF6B6B', type: 'dashed', width: 2 },
+                symbol: 'none',
+                tooltip: { show: false }
+            }
+        ]
+    });
+
+    window.addEventListener('resize', () => {
+        overlayChart.resize(); histChart.resize();
+        errorTimeChart.resize(); scatterChart.resize();
+    });
+</script>
+{% endblock %}

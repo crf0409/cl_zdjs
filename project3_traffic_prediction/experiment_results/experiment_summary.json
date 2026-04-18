@@ -1,0 +1,93 @@
+{
+  "dataset": "nuScenes-based Traffic Flow (60 days, 6 locations)",
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 3090",
+  "framework": "PyTorch 2.5.1+cu121",
+  "sequence_length": 24,
+  "features": [
+    "vehicle_count",
+    "pedestrian_count",
+    "truck_count",
+    "avg_speed",
+    "occupancy_rate",
+    "hour_sin",
+    "hour_cos",
+    "is_weekend"
+  ],
+  "data_split": "70/15/15",
+  "models": {
+    "LSTM": {
+      "MAE": 0.791,
+      "RMSE": 1.154,
+      "MAPE": 14.350000381469727,
+      "R2": 0.942,
+      "train_time_s": 87.1,
+      "parameters": 54337
+    },
+    "CNN": {
+      "MAE": 0.8971,
+      "RMSE": 1.2845,
+      "MAPE": 19.600000381469727,
+      "R2": 0.9281,
+      "train_time_s": 32.9,
+      "parameters": 53569
+    },
+    "LSTM+CNN": {
+      "MAE": 0.7536,
+      "RMSE": 1.0968,
+      "MAPE": 13.600000381469727,
+      "R2": 0.9476,
+      "train_time_s": 122.5,
+      "parameters": 70562
+    },
+    "Collaborative Filtering": {
+      "MAE": 1.5516,
+      "RMSE": 2.1178,
+      "MAPE": 29.17,
+      "R2": 0.8248,
+      "train_time_s": 0.5,
+      "parameters": 0
+    }
+  },
+  "sequence_length_study": {
+    "6": {
+      "MAE": 0.9057,
+      "RMSE": 1.3069,
+      "R2": 0.9257
+    },
+    "12": {
+      "MAE": 0.7947,
+      "RMSE": 1.1814,
+      "R2": 0.9392
+    },
+    "24": {
+      "MAE": 0.8527,
+      "RMSE": 1.2173,
+      "R2": 0.9354
+    },
+    "48": {
+      "MAE": 0.8768,
+      "RMSE": 1.2832,
+      "R2": 0.9281
+    },
+    "96": {
+      "MAE": 0.8666,
+      "RMSE": 1.2875,
+      "R2": 0.9274
+    }
+  },
+  "multi_location": {
+    "Main Road A": {
+      "MAE": 0.7939,
+      "R2": 0.9446
+    },
+    "Commercial Dist. B": {
+      "MAE": 0.977,
+      "R2": 0.953
+    },
+    "Residential Area C": {
+      "MAE": 0.5126,
+      "R2": 0.9472
+    }
+  }
+}

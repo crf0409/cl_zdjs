@@ -1,0 +1,73 @@
+# ============================================================
+# 智能交通流量预测系统 - Docker Compose 一键启动
+# 用法:
+#   cp .env.example .env        # 创建环境变量文件
+#   docker-compose up -d        # 后台启动所有服务
+#   docker-compose logs -f web  # 查看后端日志
+# ============================================================
+
+version: '3.8'
+
+services:
+  # ---- MySQL 数据库 ----
+  db:
+    image: mysql:8.0
+    container_name: traffic_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_pass_2024}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-smart_traffic}
+      MYSQL_USER: ${MYSQL_USER:-traffic_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-traffic_pass_2024}
+      MYSQL_CHARSET: utf8mb4
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/init_database.sql:/docker-entrypoint-initdb.d/01-init.sql
+      - ./database/init_data.sql:/docker-entrypoint-initdb.d/02-data.sql
+      - ./database/mysql/my.cnf:/etc/mysql/conf.d/custom.cnf
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ---- Django 后端 + 前端模板 ----
+  web:
+    build:
+      context: ./project3_traffic_prediction
+      dockerfile: Dockerfile
+    container_name: traffic_web
+    restart: unless-stopped
+    environment:
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:-dev-secret-key-change-me}
+      - DJANGO_DEBUG=${DJANGO_DEBUG:-True}
+      - DB_ENGINE=mysql
+      - MYSQL_HOST=db
+      - MYSQL_PORT=3306
+      - MYSQL_DATABASE=${MYSQL_DATABASE:-smart_traffic}
+      - MYSQL_USER=${MYSQL_USER:-traffic_user}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-traffic_pass_2024}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./project3_traffic_prediction:/app
+      - media_data:/app/media
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      sh -c "
+        echo '等待数据库就绪...' &&
+        python manage.py migrate --noinput &&
+        echo '数据库迁移完成' &&
+        python manage.py runserver 0.0.0.0:8000
+      "
+
+volumes:
+  mysql_data:
+    driver: local
+  media_data:
+    driver: local

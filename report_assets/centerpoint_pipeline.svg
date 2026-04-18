@@ -1,0 +1,428 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="811.68148pt" height="358.128pt" viewBox="0 0 811.68148 358.128" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:date>2026-03-17T14:42:39.841704</dc:date>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.10.8, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 358.128 
+L 811.68148 358.128 
+L 811.68148 0 
+L 0 0 
+L 0 358.128 
+z
+" style="fill: none; opacity: 0"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 40.320648 293.754576 
+L 172.169352 293.754576 
+Q 189.601272 293.754576 189.601272 281.151216 
+L 189.601272 88.434384 
+Q 189.601272 75.831024 172.169352 75.831024 
+L 40.320648 75.831024 
+Q 22.888728 75.831024 22.888728 88.434384 
+L 22.888728 281.151216 
+Q 22.888728 293.754576 40.320648 293.754576 
+z
+" clip-path="url(#p2b9ca8b2a0)" style="fill: #16213a; opacity: 0.94; stroke: #2aa7ff; stroke-width: 2.2; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_3">
+    <path d="M 49.828968 107.568576 
+L 107.195832 107.568576 
+Q 118.288872 107.568576 118.288872 99.548256 
+L 118.288872 94.736064 
+Q 118.288872 86.715744 107.195832 86.715744 
+L 49.828968 86.715744 
+Q 38.735928 86.715744 38.735928 94.736064 
+L 38.735928 99.548256 
+Q 38.735928 107.568576 49.828968 107.568576 
+z
+" clip-path="url(#p2b9ca8b2a0)" style="fill: #2aa7ff; opacity: 0.18"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 238.410648 293.754576 
+L 370.259352 293.754576 
+Q 387.691272 293.754576 387.691272 281.151216 
+L 387.691272 88.434384 
+Q 387.691272 75.831024 370.259352 75.831024 
+L 238.410648 75.831024 
+Q 220.978728 75.831024 220.978728 88.434384 
+L 220.978728 281.151216 
+Q 220.978728 293.754576 238.410648 293.754576 
+z
+" clip-path="url(#p2b9ca8b2a0)" style="fill: #16213a; opacity: 0.94; stroke: #00c98d; stroke-width: 2.2; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_5">
+    <path d="M 247.918968 107.568576 
+L 305.285832 107.568576 
+Q 316.378872 107.568576 316.378872 99.548256 
+L 316.378872 94.736064 
+Q 316.378872 86.715744 305.285832 86.715744 
+L 247.918968 86.715744 
+Q 236.825928 86.715744 236.825928 94.736064 
+L 236.825928 99.548256 
+Q 236.825928 107.568576 247.918968 107.568576 
+z
+" clip-path="url(#p2b9ca8b2a0)" style="fill: #00c98d; opacity: 0.18"/>
+   </g>
+   <g id="patch_6">
+    <path d="M 436.500648 293.754576 
+L 568.349352 293.754576 
+Q 585.781272 293.754576 585.781272 281.151216 
+L 585.781272 88.434384 
+Q 585.781272 75.831024 568.349352 75.831024 
+L 436.500648 75.831024 
+Q 419.068728 75.831024 419.068728 88.434384 
+L 419.068728 281.151216 
+Q 419.068728 293.754576 436.500648 293.754576 
+z
+" clip-path="url(#p2b9ca8b2a0)" style="fill: #16213a; opacity: 0.94; stroke: #ff9e3d; stroke-width: 2.2; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_7">
+    <path d="M 446.008968 107.568576 
+L 503.375832 107.568576 
+Q 514.468872 107.568576 514.468872 99.548256 
+L 514.468872 94.736064 
+Q 514.468872 86.715744 503.375832 86.715744 
+L 446.008968 86.715744 
+Q 434.915928 86.715744 434.915928 94.736064 
+L 434.915928 99.548256 
+Q 434.915928 107.568576 446.008968 107.568576 
+z
+" clip-path="url(#p2b9ca8b2a0)" style="fill: #ff9e3d; opacity: 0.18"/>
+   </g>
+   <g id="patch_8">
+    <path d="M 634.590648 293.754576 
+L 766.439352 293.754576 
+Q 783.871272 293.754576 783.871272 281.151216 
+L 783.871272 88.434384 
+Q 783.871272 75.831024 766.439352 75.831024 
+L 634.590648 75.831024 
+Q 617.158728 75.831024 617.158728 88.434384 
+L 617.158728 281.151216 
+Q 617.158728 293.754576 634.590648 293.754576 
+z
+" clip-path="url(#p2b9ca8b2a0)" style="fill: #16213a; opacity: 0.94; stroke: #f472b6; stroke-width: 2.2; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_9">
+    <path d="M 644.098968 107.568576 
+L 701.465832 107.568576 
+Q 712.558872 107.568576 712.558872 99.548256 
+L 712.558872 94.736064 
+Q 712.558872 86.715744 701.465832 86.715744 
+L 644.098968 86.715744 
+Q 633.005928 86.715744 633.005928 94.736064 
+L 633.005928 99.548256 
+Q 633.005928 107.568576 644.098968 107.568576 
+z
+" clip-path="url(#p2b9ca8b2a0)" style="fill: #f472b6; opacity: 0.18"/>
+   </g>
+   <g id="patch_10">
+    <path d="M 49.828968 200.375136 
+L 162.661032 200.375136 
+Q 173.754072 200.375136 173.754072 192.354816 
+L 173.754072 135.983424 
+Q 173.754072 127.963104 162.661032 127.963104 
+L 49.828968 127.963104 
+Q 38.735928 127.963104 38.735928 135.983424 
+L 38.735928 192.354816 
+Q 38.735928 200.375136 49.828968 200.375136 
+z
+" clip-path="url(#p2b9ca8b2a0)" style="fill: #1e2945; opacity: 0.98; stroke: #2aa7ff; stroke-width: 1.6; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_11">
+    <path d="M 49.828968 274.849536 
+L 162.661032 274.849536 
+Q 173.754072 274.849536 173.754072 266.829216 
+L 173.754072 221.915424 
+Q 173.754072 213.895104 162.661032 213.895104 
+L 49.828968 213.895104 
+Q 38.735928 213.895104 38.735928 221.915424 
+L 38.735928 266.829216 
+Q 38.735928 274.849536 49.828968 274.849536 
+z
+" clip-path="url(#p2b9ca8b2a0)" style="fill: #1e2945; opacity: 0.98; stroke: #2aa7ff; stroke-width: 1.6; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_12">
+    <path d="M 247.918968 200.375136 
+L 360.751032 200.375136 
+Q 371.844072 200.375136 371.844072 192.354816 
+L 371.844072 135.983424 
+Q 371.844072 127.963104 360.751032 127.963104 
+L 247.918968 127.963104 
+Q 236.825928 127.963104 236.825928 135.983424 
+L 236.825928 192.354816 
+Q 236.825928 200.375136 247.918968 200.375136 
+z
+" clip-path="url(#p2b9ca8b2a0)" style="fill: #1e2945; opacity: 0.98; stroke: #00c98d; stroke-width: 1.6; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_13">
+    <path d="M 247.918968 274.849536 
+L 360.751032 274.849536 
+Q 371.844072 274.849536 371.844072 266.829216 
+L 371.844072 221.915424 
+Q 371.844072 213.895104 360.751032 213.895104 
+L 247.918968 213.895104 
+Q 236.825928 213.895104 236.825928 221.915424 
+L 236.825928 266.829216 
+Q 236.825928 274.849536 247.918968 274.849536 
+z
+" clip-path="url(#p2b9ca8b2a0)" style="fill: #1e2945; opacity: 0.98; stroke: #00c98d; stroke-width: 1.6; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_14">
+    <path d="M 446.008968 200.375136 
+L 558.841032 200.375136 
+Q 569.934072 200.375136 569.934072 192.354816 
+L 569.934072 135.983424 
+Q 569.934072 127.963104 558.841032 127.963104 
+L 446.008968 127.963104 
+Q 434.915928 127.963104 434.915928 135.983424 
+L 434.915928 192.354816 
+Q 434.915928 200.375136 446.008968 200.375136 
+z
+" clip-path="url(#p2b9ca8b2a0)" style="fill: #1e2945; opacity: 0.98; stroke: #ff9e3d; stroke-width: 1.6; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_15">
+    <path d="M 446.008968 274.849536 
+L 558.841032 274.849536 
+Q 569.934072 274.849536 569.934072 266.829216 
+L 569.934072 221.915424 
+Q 569.934072 213.895104 558.841032 213.895104 
+L 446.008968 213.895104 
+Q 434.915928 213.895104 434.915928 221.915424 
+L 434.915928 266.829216 
+Q 434.915928 274.849536 446.008968 274.849536 
+z
+" clip-path="url(#p2b9ca8b2a0)" style="fill: #1e2945; opacity: 0.98; stroke: #ff9e3d; stroke-width: 1.6; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_16">
+    <path d="M 644.098968 200.375136 
+L 756.931032 200.375136 
+Q 768.024072 200.375136 768.024072 192.354816 
+L 768.024072 135.983424 
+Q 768.024072 127.963104 756.931032 127.963104 
+L 644.098968 127.963104 
+Q 633.005928 127.963104 633.005928 135.983424 
+L 633.005928 192.354816 
+Q 633.005928 200.375136 644.098968 200.375136 
+z
+" clip-path="url(#p2b9ca8b2a0)" style="fill: #1e2945; opacity: 0.98; stroke: #f472b6; stroke-width: 1.6; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_17">
+    <path d="M 644.098968 274.849536 
+L 756.931032 274.849536 
+Q 768.024072 274.849536 768.024072 266.829216 
+L 768.024072 221.915424 
+Q 768.024072 213.895104 756.931032 213.895104 
+L 644.098968 213.895104 
+Q 633.005928 213.895104 633.005928 221.915424 
+L 633.005928 266.829216 
+Q 633.005928 274.849536 644.098968 274.849536 
+z
+" clip-path="url(#p2b9ca8b2a0)" style="fill: #1e2945; opacity: 0.98; stroke: #f472b6; stroke-width: 1.6; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_18">
+    <path d="M 67.260888 328.127376 
+L 240.312312 328.127376 
+Q 252.990072 328.127376 252.990072 318.961296 
+L 252.990072 313.003344 
+Q 252.990072 303.837264 240.312312 303.837264 
+L 67.260888 303.837264 
+Q 54.583128 303.837264 54.583128 313.003344 
+L 54.583128 318.961296 
+Q 54.583128 328.127376 67.260888 328.127376 
+z
+" clip-path="url(#p2b9ca8b2a0)" style="fill: #00c98d; opacity: 0.15; stroke: #00c98d; stroke-width: 1.4; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_19">
+    <path d="M 316.854288 328.127376 
+L 466.134912 328.127376 
+Q 478.812672 328.127376 478.812672 318.961296 
+L 478.812672 313.003344 
+Q 478.812672 303.837264 466.134912 303.837264 
+L 316.854288 303.837264 
+Q 304.176528 303.837264 304.176528 313.003344 
+L 304.176528 318.961296 
+Q 304.176528 328.127376 316.854288 328.127376 
+z
+" clip-path="url(#p2b9ca8b2a0)" style="fill: #2aa7ff; opacity: 0.15; stroke: #2aa7ff; stroke-width: 1.4; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_20">
+    <path d="M 534.753288 328.127376 
+L 731.575512 328.127376 
+Q 744.253272 328.127376 744.253272 318.961296 
+L 744.253272 313.003344 
+Q 744.253272 303.837264 731.575512 303.837264 
+L 534.753288 303.837264 
+Q 522.075528 303.837264 522.075528 313.003344 
+L 522.075528 318.961296 
+Q 522.075528 328.127376 534.753288 328.127376 
+z
+" clip-path="url(#p2b9ca8b2a0)" style="fill: #f472b6; opacity: 0.15; stroke: #f472b6; stroke-width: 1.4; stroke-linejoin: miter"/>
+   </g>
+   <g id="text_1">
+    <text style="font-weight: 700; font-size: 23px; font-family: 'WenQuanYi Zen Hei'; text-anchor: start; fill: #f7fafc" x="23.0472" y="27.2508" transform="rotate(-0 23.0472 27.2508)">CenterPoint 结构图</text>
+   </g>
+   <g id="text_2">
+    <text style="font-size: 10.8px; font-family: 'WenQuanYi Zen Hei'; text-anchor: start; fill: #b8c6e2" x="23.0472" y="48.44736" transform="rotate(-0 23.0472 48.44736)">按“输入点云 → BEV 特征 → 中心热图 → 3D框输出”重绘，避免文字重叠和交叉连线。</text>
+   </g>
+   <g id="text_3">
+    <text style="font-weight: 700; font-size: 12.5px; font-family: 'WenQuanYi Zen Hei'; text-anchor: middle; fill: #2aa7ff" x="78.5124" y="101.809767" transform="rotate(-0 78.5124 101.809767)">输入</text>
+   </g>
+   <g id="text_4">
+    <text style="font-weight: 700; font-size: 16px; font-family: 'WenQuanYi Zen Hei'; text-anchor: start; fill: #f7fafc" x="41.27148" y="132.79355" transform="rotate(-0 41.27148 132.79355)">LiDAR 点云与预处理</text>
+   </g>
+   <g id="text_5">
+    <text style="font-weight: 700; font-size: 12.5px; font-family: 'WenQuanYi Zen Hei'; text-anchor: middle; fill: #00c98d" x="276.6024" y="101.669142" transform="rotate(-0 276.6024 101.669142)">编码</text>
+   </g>
+   <g id="text_6">
+    <text style="font-weight: 700; font-size: 16px; font-family: 'WenQuanYi Zen Hei'; text-anchor: start; fill: #f7fafc" x="239.36148" y="132.6598" transform="rotate(-0 239.36148 132.6598)">体素化与 BEV 特征</text>
+   </g>
+   <g id="text_7">
+    <text style="font-weight: 700; font-size: 12.5px; font-family: 'WenQuanYi Zen Hei'; text-anchor: middle; fill: #ff9e3d" x="474.6924" y="101.583204" transform="rotate(-0 474.6924 101.583204)">检测头</text>
+   </g>
+   <g id="text_8">
+    <text style="font-weight: 700; font-size: 16px; font-family: 'WenQuanYi Zen Hei'; text-anchor: start; fill: #f7fafc" x="437.45148" y="132.93355" transform="rotate(-0 437.45148 132.93355)">中心热图与属性回归</text>
+   </g>
+   <g id="text_9">
+    <text style="font-weight: 700; font-size: 12.5px; font-family: 'WenQuanYi Zen Hei'; text-anchor: middle; fill: #f472b6" x="672.7824" y="101.602735" transform="rotate(-0 672.7824 101.602735)">输出</text>
+   </g>
+   <g id="text_10">
+    <text style="font-weight: 700; font-size: 16px; font-family: 'WenQuanYi Zen Hei'; text-anchor: start; fill: #f7fafc" x="635.54148" y="132.7223" transform="rotate(-0 635.54148 132.7223)">3D 检测结果与部署接口</text>
+   </g>
+   <g id="text_11">
+    <text style="font-weight: 700; font-size: 12.2px; font-family: 'WenQuanYi Zen Hei'; text-anchor: start; fill: #f7fafc" x="49.98744" y="150.70029" transform="rotate(-0 49.98744 150.70029)">原始输入</text>
+   </g>
+   <g id="text_12">
+    <text style="font-size: 9.8px; font-family: 'WenQuanYi Zen Hei'; text-anchor: start; fill: #b8c6e2" x="49.98744" y="165.400997" transform="rotate(-0 49.98744 165.400997)">多线激光雷达点云</text>
+   </g>
+   <g id="text_13">
+    <text style="font-size: 9.8px; font-family: 'WenQuanYi Zen Hei'; text-anchor: start; fill: #b8c6e2" x="49.98744" y="181.556481" transform="rotate(-0 49.98744 181.556481)">时间同步与坐标变换</text>
+   </g>
+   <g id="text_14">
+    <text style="font-weight: 700; font-size: 12.2px; font-family: 'WenQuanYi Zen Hei'; text-anchor: start; fill: #f7fafc" x="49.98744" y="235.987977" transform="rotate(-0 49.98744 235.987977)">几何整理</text>
+   </g>
+   <g id="text_15">
+    <text style="font-size: 9.8px; font-family: 'WenQuanYi Zen Hei'; text-anchor: start; fill: #b8c6e2" x="49.98744" y="251.49531" transform="rotate(-0 49.98744 251.49531)">去噪 / 范围裁剪</text>
+   </g>
+   <g id="text_16">
+    <text style="font-size: 9.8px; font-family: 'WenQuanYi Zen Hei'; text-anchor: start; fill: #b8c6e2" x="49.98744" y="267.555856" transform="rotate(-0 49.98744 267.555856)">形成稀疏点集合</text>
+   </g>
+   <g id="text_17">
+    <text style="font-weight: 700; font-size: 12.2px; font-family: 'WenQuanYi Zen Hei'; text-anchor: start; fill: #f7fafc" x="248.07744" y="150.86804" transform="rotate(-0 248.07744 150.86804)">体素 / Pillar 编码</text>
+   </g>
+   <g id="text_18">
+    <text style="font-size: 9.8px; font-family: 'WenQuanYi Zen Hei'; text-anchor: start; fill: #b8c6e2" x="248.07744" y="165.381091" transform="rotate(-0 248.07744 165.381091)">离散化局部结构</text>
+   </g>
+   <g id="text_19">
+    <text style="font-size: 9.8px; font-family: 'WenQuanYi Zen Hei'; text-anchor: start; fill: #b8c6e2" x="248.07744" y="181.441638" transform="rotate(-0 248.07744 181.441638)">聚合点级几何信息</text>
+   </g>
+   <g id="text_20">
+    <text style="font-weight: 700; font-size: 12.2px; font-family: 'WenQuanYi Zen Hei'; text-anchor: start; fill: #f7fafc" x="248.07744" y="236.536978" transform="rotate(-0 248.07744 236.536978)">BEV 主干网络</text>
+   </g>
+   <g id="text_21">
+    <text style="font-size: 9.8px; font-family: 'WenQuanYi Zen Hei'; text-anchor: start; fill: #b8c6e2" x="248.07744" y="251.198248" transform="rotate(-0 248.07744 251.198248)">卷积提取俯视特征</text>
+   </g>
+   <g id="text_22">
+    <text style="font-size: 9.8px; font-family: 'WenQuanYi Zen Hei'; text-anchor: start; fill: #b8c6e2" x="248.07744" y="267.4012" transform="rotate(-0 248.07744 267.4012)">形成统一特征图</text>
+   </g>
+   <g id="text_23">
+    <text style="font-weight: 700; font-size: 12.2px; font-family: 'WenQuanYi Zen Hei'; text-anchor: start; fill: #f7fafc" x="446.16744" y="149.17529" transform="rotate(-0 446.16744 149.17529)">Center Heatmap</text>
+   </g>
+   <g id="text_24">
+    <text style="font-size: 9.8px; font-family: 'WenQuanYi Zen Hei'; text-anchor: start; fill: #b8c6e2" x="446.16744" y="165.601591" transform="rotate(-0 446.16744 165.601591)">先定位目标中心点</text>
+   </g>
+   <g id="text_25">
+    <text style="font-size: 9.8px; font-family: 'WenQuanYi Zen Hei'; text-anchor: start; fill: #b8c6e2" x="446.16744" y="181.16295" transform="rotate(-0 446.16744 181.16295)">避免复杂锚框设计</text>
+   </g>
+   <g id="text_26">
+    <text style="font-weight: 700; font-size: 12.2px; font-family: 'WenQuanYi Zen Hei'; text-anchor: start; fill: #f7fafc" x="446.16744" y="236.226259" transform="rotate(-0 446.16744 236.226259)">属性回归</text>
+   </g>
+   <g id="text_27">
+    <text style="font-size: 9.8px; font-family: 'WenQuanYi Zen Hei'; text-anchor: start; fill: #b8c6e2" x="446.16744" y="251.542779" transform="rotate(-0 446.16744 251.542779)">尺寸 / 朝向 / 速度</text>
+   </g>
+   <g id="text_28">
+    <text style="font-size: 9.8px; font-family: 'WenQuanYi Zen Hei'; text-anchor: start; fill: #b8c6e2" x="446.16744" y="267.353731" transform="rotate(-0 446.16744 267.353731)">中心偏移联合预测</text>
+   </g>
+   <g id="text_29">
+    <text style="font-weight: 700; font-size: 12.2px; font-family: 'WenQuanYi Zen Hei'; text-anchor: start; fill: #f7fafc" x="644.25744" y="150.259946" transform="rotate(-0 644.25744 150.259946)">3D 边界框</text>
+   </g>
+   <g id="text_30">
+    <text style="font-size: 9.8px; font-family: 'WenQuanYi Zen Hei'; text-anchor: start; fill: #b8c6e2" x="644.25744" y="165.353529" transform="rotate(-0 644.25744 165.353529)">位置、尺寸、yaw 一次输出</text>
+   </g>
+   <g id="text_31">
+    <text style="font-size: 9.8px; font-family: 'WenQuanYi Zen Hei'; text-anchor: start; fill: #b8c6e2" x="644.25744" y="181.565669" transform="rotate(-0 644.25744 181.565669)">车辆 / 行人 / 骑行者</text>
+   </g>
+   <g id="text_32">
+    <text style="font-weight: 700; font-size: 12.2px; font-family: 'WenQuanYi Zen Hei'; text-anchor: start; fill: #f7fafc" x="644.25744" y="236.596071" transform="rotate(-0 644.25744 236.596071)">部署衔接</text>
+   </g>
+   <g id="text_33">
+    <text style="font-size: 9.8px; font-family: 'WenQuanYi Zen Hei'; text-anchor: start; fill: #b8c6e2" x="644.25744" y="251.207435" transform="rotate(-0 644.25744 251.207435)">可接车载跟踪模块</text>
+   </g>
+   <g id="text_34">
+    <text style="font-size: 9.8px; font-family: 'WenQuanYi Zen Hei'; text-anchor: start; fill: #b8c6e2" x="644.25744" y="267.191419" transform="rotate(-0 644.25744 267.191419)">与 2D 感知结果互补</text>
+   </g>
+   <g id="patch_21">
+    <path d="M 192.61224 184.7928 
+Q 206.87472 184.7928 218.006705 184.7928 
+" style="fill: none; stroke: #2aa7ff; stroke-width: 2.8; stroke-linecap: round"/>
+    <path d="M 210.806705 181.1928 
+L 218.006705 184.7928 
+L 210.806705 188.3928 
+z
+" style="fill: #2aa7ff; stroke: #2aa7ff; stroke-width: 2.8; stroke-linecap: round"/>
+   </g>
+   <g id="patch_22">
+    <path d="M 390.70224 184.7928 
+Q 404.96472 184.7928 416.096705 184.7928 
+" style="fill: none; stroke: #00c98d; stroke-width: 2.8; stroke-linecap: round"/>
+    <path d="M 408.896705 181.1928 
+L 416.096705 184.7928 
+L 408.896705 188.3928 
+z
+" style="fill: #00c98d; stroke: #00c98d; stroke-width: 2.8; stroke-linecap: round"/>
+   </g>
+   <g id="patch_23">
+    <path d="M 588.79224 184.7928 
+Q 603.05472 184.7928 614.186705 184.7928 
+" style="fill: none; stroke: #ff9e3d; stroke-width: 2.8; stroke-linecap: round"/>
+    <path d="M 606.986705 181.1928 
+L 614.186705 184.7928 
+L 606.986705 188.3928 
+z
+" style="fill: #ff9e3d; stroke: #ff9e3d; stroke-width: 2.8; stroke-linecap: round"/>
+   </g>
+   <g id="text_35">
+    <text style="font-weight: 700; font-size: 10.6px; font-family: 'WenQuanYi Zen Hei'; text-anchor: middle; fill: #f7fafc" x="153.7866" y="319.594601" transform="rotate(-0 153.7866 319.594601)">先检测中心点，再回归 3D 属性</text>
+   </g>
+   <g id="text_36">
+    <text style="font-weight: 700; font-size: 10.6px; font-family: 'WenQuanYi Zen Hei'; text-anchor: middle; fill: #f7fafc" x="391.4946" y="319.413242" transform="rotate(-0 391.4946 319.413242)">BEV 表达让连线更简单</text>
+   </g>
+   <g id="text_37">
+    <text style="font-weight: 700; font-size: 10.6px; font-family: 'WenQuanYi Zen Hei'; text-anchor: middle; fill: #f7fafc" x="633.1644" y="319.433945" transform="rotate(-0 633.1644 319.433945)">输出直接服务车载空间感知</text>
+   </g>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="p2b9ca8b2a0">
+   <rect x="7.2" y="7.2" width="792.36" height="343.728"/>
+  </clipPath>
+ </defs>
+</svg>

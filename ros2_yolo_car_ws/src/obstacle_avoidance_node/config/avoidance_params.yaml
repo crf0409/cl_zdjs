@@ -1,0 +1,35 @@
+obstacle_avoidance:
+  ros__parameters:
+    linear_speed: 0.2
+    angular_speed: 0.5
+    threat_area_threshold: 0.05
+    emergency_area_threshold: 0.15
+    image_width: 640
+    image_height: 480
+    obstacle_classes:
+      - "person"
+      - "bicycle"
+      - "car"
+      - "motorcycle"
+      - "bus"
+      - "truck"
+      - "traffic light"
+      - "fire hydrant"
+      - "stop sign"
+      - "parking meter"
+      - "bench"
+      - "chair"
+      - "couch"
+      - "dining table"
+      - "bottle"
+      - "backpack"
+      - "umbrella"
+      - "handbag"
+      - "suitcase"
+      - "potted plant"
+      - "bird"
+      - "cat"
+      - "dog"
+      - "horse"
+      - "sheep"
+      - "cow"

@@ -1,0 +1,7 @@
+Metadata-Version: 2.1
+Name: obstacle-avoidance-node
+Version: 0.1.0
+Summary: Reactive obstacle avoidance node using YOLO detections
+Maintainer: user
+Maintainer-email: user@example.com
+License: Apache-2.0

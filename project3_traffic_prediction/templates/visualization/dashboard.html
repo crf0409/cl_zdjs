@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能交通流量预测系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+    <style>
+        :root {
+            --sidebar-bg: #172033;
+            --sidebar-hover: #263553;
+            --sidebar-active: #0f62fe;
+            --main-bg: #edf2f7;
+            --card-border: rgba(15, 23, 42, 0.06);
+            --card-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+            --text-soft: #64748b;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background:
+                radial-gradient(circle at top right, rgba(14, 165, 233, 0.14), transparent 28%),
+                linear-gradient(180deg, #f8fbff 0%, var(--main-bg) 100%);
+            color: #0f172a;
+            font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+            overflow-x: hidden;
+        }
+
+        .sidebar {
+            min-height: 100vh;
+            background:
+                linear-gradient(180deg, rgba(255,255,255,0.04), transparent 14%),
+                linear-gradient(180deg, #172033 0%, #101827 100%);
+            color: #f8fafc;
+            padding-top: 18px;
+            box-shadow: 12px 0 30px rgba(15, 23, 42, 0.16);
+        }
+
+        .sidebar-brand {
+            padding: 0 18px 20px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            text-align: center;
+        }
+
+        .sidebar-brand strong {
+            display: block;
+            color: #e2e8f0;
+            font-size: 1.08rem;
+            letter-spacing: 0.06em;
+        }
+
+        .sidebar-brand span {
+            display: block;
+            margin-top: 6px;
+            color: #7dd3fc;
+            font-size: 0.78rem;
+        }
+
+        .sidebar .nav-link {
+            color: #cbd5e1;
+            padding: 12px 18px;
+            margin: 6px 12px;
+            border-radius: 14px;
+            transition: all 0.22s ease;
+            font-size: 0.95rem;
+            cursor: pointer;
+        }
+
+        .sidebar .nav-link:hover {
+            background: rgba(255,255,255,0.08);
+            color: #fff;
+            transform: translateX(2px);
+        }
+
+        .sidebar .nav-link.active {
+            background: linear-gradient(135deg, var(--sidebar-active), #1d4ed8);
+            color: #fff;
+            font-weight: 600;
+            box-shadow: 0 12px 24px rgba(15, 98, 254, 0.22);
+        }
+
+        .sidebar .nav-link i {
+            margin-right: 10px;
+        }
+
+        .top-navbar {
+            background: rgba(255, 255, 255, 0.86);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+            padding: 16px 28px;
+            margin-bottom: 24px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .sub-caption {
+            color: var(--text-soft);
+            font-size: 0.85rem;
+        }
+
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+            background-color: #10b981;
+            box-shadow: 0 0 8px #10b981;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.35); }
+            70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        .stat-card,
+        .chart-card,
+        .hero-card {
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.92);
+            box-shadow: var(--card-shadow);
+        }
+
+        .stat-card {
+            padding: 20px;
+            min-height: 144px;
+        }
+
+        .stat-card h6 {
+            color: var(--text-soft);
+            font-size: 0.9rem;
+            margin-bottom: 12px;
+        }
+
+        .icon-box {
+            width: 52px;
+            height: 52px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.45rem;
+        }
+
+        .chart-card {
+            padding: 22px;
+            margin-bottom: 20px;
+        }
+
+        .hero-card {
+            padding: 32px 28px;
+            background:
+                radial-gradient(circle at top left, rgba(255,255,255,0.18), transparent 32%),
+                linear-gradient(135deg, #0f62fe, #164cc9);
+            color: #fff;
+        }
+
+        #main-chart {
+            width: 100%;
+            height: 430px;
+        }
+
+        .section-note {
+            background: #eff6ff;
+            color: #1d4ed8;
+            border-radius: 12px;
+            padding: 10px 12px;
+            font-size: 0.86rem;
+        }
+
+        .terminal-log {
+            background: #0f172a;
+            color: #93c5fd;
+            font-family: "JetBrains Mono", "Courier New", monospace;
+            padding: 16px;
+            border-radius: 14px;
+            height: 260px;
+            overflow-y: auto;
+            font-size: 0.82rem;
+            line-height: 1.55;
+        }
+
+        .terminal-log .warn {
+            color: #fbbf24;
+        }
+
+        .terminal-log .info {
+            color: #86efac;
+        }
+
+        .metric-strip {
+            background: #f8fafc;
+            border-radius: 14px;
+            padding: 12px;
+        }
+
+        .table thead th {
+            white-space: nowrap;
+        }
+
+        .empty-card {
+            padding: 28px;
+            border-radius: 18px;
+            background: #f8fafc;
+            color: var(--text-soft);
+            text-align: center;
+        }
+
+        .summary-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #eff6ff;
+            color: #1d4ed8;
+            border-radius: 999px;
+            padding: 6px 12px;
+            font-size: 0.82rem;
+        }
+
+        .mobile-nav {
+            padding: 0 16px 12px;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        .mobile-nav .btn {
+            margin-right: 8px;
+            border-radius: 999px;
+        }
+
+        @media (max-width: 767.98px) {
+            .sidebar {
+                min-height: auto;
+                padding-bottom: 12px;
+            }
+
+            .top-navbar {
+                position: static;
+                padding: 14px 16px;
+            }
+
+            .chart-card,
+            .stat-card,
+            .hero-card {
+                border-radius: 16px;
+            }
+
+            #main-chart {
+                height: 320px;
+            }
+        }
+    </style>
+</head>
+<body>
+{{ dashboard_payload|json_script:"dashboard-payload" }}
+
+<div id="app" class="container-fluid p-0">
+    <div class="row g-0">
+        <div class="col-md-2 sidebar d-none d-md-block">
+            <div class="sidebar-brand">
+                <strong><i class="bi bi-stoplights-fill me-2"></i>智能交通预测系统</strong>
+                <span>基于项目3真实数据库快照</span>
+            </div>
+            <nav class="nav flex-column">
+                <a
+                    href="#"
+                    v-for="item in state.menu_items"
+                    :key="item.id"
+                    class="nav-link"
+                    :class="{ active: currentModule === item.id }"
+                    @click.prevent="switchModule(item.id)"
+                >
+                    <i :class="item.icon"></i> [[ item.name ]]
+                </a>
+            </nav>
+        </div>
+
+        <div class="col-md-10">
+            <div class="top-navbar d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div>
+                    <h4 class="mb-1 fw-bold text-secondary">[[ getModuleName(currentModule) ]]</h4>
+                    <div class="sub-caption">数据快照时间：[[ state.snapshot_label ]]</div>
+                </div>
+                <div class="d-flex align-items-center flex-wrap gap-3">
+                    <div class="text-secondary fs-6">
+                        <span class="status-indicator"></span> [[ state.summary.service_status ]]
+                    </div>
+                    <div class="dropdown">
+                        <button class="btn btn-light dropdown-toggle rounded-pill px-3 border" type="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle text-primary me-1"></i>
+                            [[ state.current_user.name ]] ([[ state.current_user.role ]])
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                            <li>
+                                <a class="dropdown-item" :href="state.current_user.profile_url">
+                                    <i class="bi bi-person-badge me-2"></i>个人入口
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item" :class="state.current_user.is_authenticated ? 'text-danger' : 'text-primary'" :href="state.current_user.logout_url">
+                                    <i class="bi" :class="state.current_user.is_authenticated ? 'bi-box-arrow-right me-2' : 'bi-box-arrow-in-right me-2'"></i>
+                                    [[ state.current_user.is_authenticated ? '退出登录' : '立即登录' ]]
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mobile-nav d-md-none">
+                <button
+                    v-for="item in state.menu_items"
+                    :key="item.id"
+                    type="button"
+                    class="btn btn-sm"
+                    :class="currentModule === item.id ? 'btn-primary' : 'btn-outline-secondary'"
+                    @click="switchModule(item.id)"
+                >
+                    [[ item.name ]]
+                </button>
+            </div>
+
+            <div class="p-4" v-show="currentModule === 'dashboard'">
+                <div class="row mb-4">
+                    <div class="col-md-3 mb-3 mb-md-0">
+                        <div class="stat-card">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6>当前路网折算流量</h6>
+                                    <h3 class="mb-1 fw-bold text-primary">[[ formatNumber(state.summary.live_traffic_hourly) ]] <span class="fs-6 text-muted fw-normal">辆/时</span></h3>
+                                    <div class="sub-caption">基于最近 [[ state.summary.interval_minutes ]] 分钟采样快照折算</div>
+                                </div>
+                                <div class="icon-box bg-primary bg-opacity-10 text-primary">
+                                    <i class="bi bi-car-front"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3 mb-md-0">
+                        <div class="stat-card">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6>当前主模型 RMSE</h6>
+                                    <h3 class="mb-1 fw-bold text-success">[[ state.summary.current_model_rmse ]]</h3>
+                                    <div class="sub-caption">[[ state.summary.current_model_name ]]</div>
+                                </div>
+                                <div class="icon-box bg-success bg-opacity-10 text-success">
+                                    <i class="bi bi-bullseye"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3 mb-md-0">
+                        <div class="stat-card">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6>活跃监测点位</h6>
+                                    <h3 class="mb-1 fw-bold text-warning">[[ state.summary.active_locations ]] <span class="fs-6 text-muted fw-normal">/ [[ state.summary.total_locations ]]</span></h3>
+                                    <div class="sub-caption">最近一帧已上报点位数</div>
+                                </div>
+                                <div class="icon-box bg-warning bg-opacity-10 text-warning">
+                                    <i class="bi bi-geo-alt"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6>累计预测结果条数</h6>
+                                    <h3 class="mb-1 fw-bold text-info">[[ formatNumber(state.summary.prediction_count) ]]</h3>
+                                    <div class="sub-caption">样本日流量环比 [[ state.summary.flow_change ]]%</div>
+                                </div>
+                                <div class="icon-box bg-info bg-opacity-10 text-info">
+                                    <i class="bi bi-server"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-8">
+                        <div class="chart-card">
+                            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                                <div>
+                                    <h5 class="fw-bold mb-1">[[ state.dashboard.chart.title ]]</h5>
+                                    <div class="sub-caption">实际值来自 `traffic_data_predictionresult.actual_flow`，预测值来自项目3已训练模型</div>
+                                </div>
+                                <div class="d-flex align-items-center gap-2 flex-wrap">
+                                    <span class="summary-pill"><i class="bi bi-pin-map"></i> [[ state.dashboard.chart.location ]]</span>
+                                    <button class="btn btn-sm btn-outline-primary" @click="refreshDashboardData">
+                                        <i class="bi bi-arrow-clockwise"></i> 刷新数据
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="main-chart"></div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="chart-card mb-4 pb-2">
+                            <h6 class="fw-bold border-bottom pb-2 mb-3"><i class="bi bi-cloud-sun text-warning me-2"></i>实时关联特征输入</h6>
+                            <div class="row text-center mb-3">
+                                <div class="col-4 border-end">
+                                    <div class="text-muted small">当前温度</div>
+                                    <div class="fs-5 fw-bold text-dark">[[ state.dashboard.weather.temperature ]]</div>
+                                </div>
+                                <div class="col-4 border-end">
+                                    <div class="text-muted small">气象条件</div>
+                                    <div class="small fw-bold text-primary mt-1">[[ state.dashboard.weather.weather_type ]]</div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="text-muted small">时段标签</div>
+                                    <div class="badge bg-danger mt-1">[[ state.dashboard.period.period_label ]]</div>
+                                </div>
+                            </div>
+                            <div class="metric-strip small">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted">湿度 / 风速</span>
+                                    <span>[[ state.dashboard.weather.humidity ]] / [[ state.dashboard.weather.wind_speed ]]</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted">能见度 / 降水</span>
+                                    <span>[[ state.dashboard.weather.visibility ]] / [[ state.dashboard.weather.precipitation ]]</span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-muted">日期类型 / 系数</span>
+                                    <span>[[ state.dashboard.period.day_type ]] / [[ state.dashboard.period.flow_factor ]]</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="chart-card">
+                            <h6 class="fw-bold border-bottom pb-2 mb-3"><i class="bi bi-cpu text-secondary me-2"></i>模型运行状态</h6>
+                            <div class="mb-3" v-for="health in state.dashboard.model_health" :key="health.name">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <div>
+                                        <span class="small fw-bold d-block">[[ health.name ]]</span>
+                                        <span class="sub-caption">[[ health.meta ]]</span>
+                                    </div>
+                                    <span class="badge" :class="'bg-' + health.status_variant">[[ health.status_label ]]</span>
+                                </div>
+                                <div class="progress" style="height: 6px;">
+                                    <div class="progress-bar" :class="'bg-' + health.status_variant" :style="{ width: health.progress + '%' }"></div>
+                                </div>
+                            </div>
+                            <div class="mt-4 pt-3 border-top d-flex justify-content-between align-items-center">
+                                <span class="text-muted small">[[ state.dashboard.fusion_metric.label ]]</span>
+                                <span class="fw-bold text-dark fs-5">[[ state.dashboard.fusion_metric.value ]]</span>
+                            </div>
+                            <div class="sub-caption mt-2">[[ state.dashboard.fusion_metric.sub_label ]]</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                        <h5 class="fw-bold mb-0">最新预测结果数据流</h5>
+                        <span class="summary-pill"><i class="bi bi-calendar-event"></i>样本日期 [[ state.summary.sample_date ]]</span>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>监测站点</th>
+                                    <th>时间戳</th>
+                                    <th>真实值</th>
+                                    <th>预测值</th>
+                                    <th>模型</th>
+                                    <th>置信区间半径</th>
+                                    <th>状态评估</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="item in state.dashboard.latest_predictions" :key="item.id">
+                                    <td><i class="bi bi-geo-alt text-muted me-1"></i> [[ item.station ]]</td>
+                                    <td>[[ item.time ]]</td>
+                                    <td>[[ item.actual ]]</td>
+                                    <td class="fw-bold text-primary">[[ item.predict ]]</td>
+                                    <td>[[ item.model ]]</td>
+                                    <td class="text-muted">[[ item.confidence ]]</td>
+                                    <td>
+                                        <span class="badge" :class="item.status === '拥堵' ? 'bg-danger' : 'bg-success'">[[ item.status ]]</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4" v-show="currentModule === 'data_manage'">
+                <div class="chart-card">
+                    <div class="d-flex justify-content-between mb-4 flex-wrap gap-2">
+                        <div>
+                            <h5 class="fw-bold mb-1"><i class="bi bi-database text-primary me-2"></i>核心数据表管理</h5>
+                            <div class="sub-caption">所有统计均直接来自项目3 SQLite 数据库</div>
+                        </div>
+                        <div>
+                            <a class="btn btn-primary me-2" :href="state.data_manage.import_url"><i class="bi bi-upload"></i> 导入数据</a>
+                            <a class="btn btn-outline-success" :href="state.data_manage.clean_url"><i class="bi bi-magic"></i> 自动化数据清洗</a>
+                        </div>
+                    </div>
+                    <table class="table table-bordered table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>表名 / 数据集</th>
+                                <th>描述</th>
+                                <th>总记录数</th>
+                                <th>最后更新时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="ds in state.data_manage.datasets" :key="ds.name">
+                                <td class="fw-bold">[[ ds.name ]]</td>
+                                <td class="text-muted">[[ ds.desc ]]</td>
+                                <td>[[ formatNumber(ds.count) ]]</td>
+                                <td>[[ ds.update_time ]]</td>
+                                <td>
+                                    <a class="btn btn-sm btn-outline-primary me-1" :href="ds.preview_url">预览</a>
+                                    <a class="btn btn-sm btn-outline-secondary" :href="ds.manage_url">维护</a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="p-4" v-show="currentModule === 'model_manage'">
+                <div class="row">
+                    <div class="col-md-6 col-xl-4 mb-4" v-for="model in state.model_manage.models" :key="model.id">
+                        <div class="chart-card text-center position-relative h-100">
+                            <span class="badge position-absolute top-0 end-0 m-3" :class="'bg-' + model.status_class">[[ model.status ]]</span>
+                            <div class="icon-box mx-auto mt-2 mb-3" :class="model.color">
+                                <i class="bi bi-diagram-3"></i>
+                            </div>
+                            <h5 class="fw-bold">[[ model.name ]]</h5>
+                            <p class="text-muted small mb-2">[[ model.desc ]]</p>
+                            <div class="summary-pill mb-3">版本 [[ model.version ]]</div>
+                            <ul class="list-unstyled text-start small border-top pt-3 mt-2">
+                                <li class="mb-2 d-flex justify-content-between"><span>框架</span><strong>[[ model.framework ]]</strong></li>
+                                <li class="mb-2 d-flex justify-content-between"><span>RMSE</span><strong class="text-primary">[[ model.rmse ]]</strong></li>
+                                <li class="mb-2 d-flex justify-content-between"><span>MAPE</span><strong>[[ model.mape === '-' ? '-' : model.mape + '%' ]]</strong></li>
+                                <li class="mb-2 d-flex justify-content-between"><span>Epochs</span><strong>[[ model.epochs ]]</strong></li>
+                                <li class="mb-2 d-flex justify-content-between"><span>序列长度</span><strong>[[ model.sequence_length ]]</strong></li>
+                            </ul>
+                            <div class="mt-3 d-grid gap-2">
+                                <a class="btn btn-sm btn-outline-primary" :href="model.detail_url"><i class="bi bi-search"></i> 查看详情</a>
+                                <a class="btn btn-sm btn-outline-secondary" :href="model.train_url"><i class="bi bi-sliders"></i> 重新训练</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4" v-show="currentModule === 'predict_result'">
+                <div class="chart-card">
+                    <form class="row g-3 mb-4" method="get" action="">
+                        <input type="hidden" name="module" :value="currentModule">
+                        <div class="col-md-3">
+                            <label class="form-label text-muted small">查询日期</label>
+                            <select class="form-select" name="prediction_date" v-model="predictFilters.date">
+                                <option value="">全部日期</option>
+                                <option v-for="dateItem in state.predict_result.date_options" :key="dateItem" :value="dateItem">[[ dateItem ]]</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label text-muted small">监测站点</label>
+                            <select class="form-select" name="prediction_location" v-model="predictFilters.location">
+                                <option value="">全部站点</option>
+                                <option v-for="loc in state.predict_result.location_options" :key="loc" :value="loc">[[ loc ]]</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label text-muted small">预测模型</label>
+                            <select class="form-select" name="prediction_model" v-model="predictFilters.model">
+                                <option value="">全部模型</option>
+                                <option v-for="model in state.predict_result.model_options" :key="model.value" :value="model.value">[[ model.label ]]</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100"><i class="bi bi-search"></i> 查询结果</button>
+                        </div>
+                    </form>
+
+                    <div class="alert alert-info py-2" role="alert">
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        当前筛选结果共 [[ state.predict_result.summary.total_count ]] 条，平均 MAE [[ state.predict_result.summary.avg_mae ]]，RMSE [[ state.predict_result.summary.avg_rmse ]]，MAPE [[ state.predict_result.summary.avg_mape ]]%。
+                    </div>
+
+                    <table class="table table-striped align-middle">
+                        <thead>
+                            <tr>
+                                <th>时间段</th>
+                                <th>路段名称</th>
+                                <th>模型</th>
+                                <th>模型预测值</th>
+                                <th>真实发生值</th>
+                                <th>误差</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="row in state.predict_result.rows" :key="row.id">
+                                <td>[[ row.time ]]</td>
+                                <td>[[ row.location ]]</td>
+                                <td>[[ row.model ]]</td>
+                                <td>[[ row.predicted ]]</td>
+                                <td>[[ row.actual ]]</td>
+                                <td :class="row.error_class">[[ row.error ]]</td>
+                                <td><a class="btn btn-sm btn-link" :href="row.detail_url">详情</a></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="p-4" v-show="currentModule === 'user_manage'">
+                <div class="chart-card">
+                    <div class="d-flex justify-content-between mb-3 flex-wrap gap-2">
+                        <div>
+                            <h5 class="fw-bold mb-1">系统账户管理</h5>
+                            <div class="sub-caption">用户数据来自 `users_user` 表</div>
+                        </div>
+                        <a class="btn btn-primary btn-sm" :href="state.user_manage.register_url"><i class="bi bi-person-plus"></i> 新增用户</a>
+                    </div>
+                    <table class="table align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>用户名</th>
+                                <th>角色分配</th>
+                                <th>最近登录</th>
+                                <th>状态</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="user in state.user_manage.users" :key="user.name">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-secondary bg-opacity-10 text-secondary rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 35px; height: 35px;">
+                                            <i class="bi bi-person"></i>
+                                        </div>
+                                        <span class="fw-bold">[[ user.name ]]</span>
+                                    </div>
+                                </td>
+                                <td><span class="badge" :class="user.role_color">[[ user.role ]]</span></td>
+                                <td class="text-muted small">[[ user.last_login ]]</td>
+                                <td>
+                                    <span class="badge" :class="user.status ? 'bg-success' : 'bg-secondary'">[[ user.status ? '启用' : '停用' ]]</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="p-4" v-show="currentModule === 'sys_monitor'">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="chart-card">
+                            <h6 class="fw-bold mb-4"><i class="bi bi-pc-display text-primary me-2"></i>服务器资源占用</h6>
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between small mb-1"><span>CPU 使用率</span><span>[[ state.sys_monitor.resources.cpu_percent ]]%</span></div>
+                                <div class="progress" style="height: 8px;"><div class="progress-bar bg-primary" :style="{ width: state.sys_monitor.resources.cpu_percent + '%' }"></div></div>
+                            </div>
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between small mb-1"><span>内存使用率 ([[ state.sys_monitor.resources.memory_total ]] GB)</span><span>[[ state.sys_monitor.resources.memory_percent ]]%</span></div>
+                                <div class="progress" style="height: 8px;"><div class="progress-bar bg-warning" :style="{ width: state.sys_monitor.resources.memory_percent + '%' }"></div></div>
+                            </div>
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between small mb-1"><span>磁盘使用率 ([[ state.sys_monitor.resources.disk_total ]] GB)</span><span>[[ state.sys_monitor.resources.disk_percent ]]%</span></div>
+                                <div class="progress" style="height: 8px;"><div class="progress-bar bg-danger" :style="{ width: state.sys_monitor.resources.disk_percent + '%' }"></div></div>
+                            </div>
+                            <div class="section-note" v-if="state.sys_monitor.resources.gpu.length">
+                                <div v-for="gpu in state.sys_monitor.resources.gpu" :key="gpu.name" class="mb-1">
+                                    [[ gpu.name ]]：利用率 [[ gpu.utilization ]]%，显存 [[ gpu.memory_used ]] / [[ gpu.memory_total ]] MB
+                                </div>
+                            </div>
+                            <div class="section-note" v-else>当前环境未检测到可用 GPU 或未安装 `nvidia-smi`。</div>
+                            <div class="mt-4 border-top pt-3 d-flex justify-content-between small text-muted">
+                                <span>OS: [[ state.sys_monitor.system_info.platform ]]</span>
+                                <span>Python: [[ state.sys_monitor.system_info.python_version ]]</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="chart-card h-100">
+                            <h6 class="fw-bold mb-3"><i class="bi bi-terminal text-dark me-2"></i>系统活动日志</h6>
+                            <div class="terminal-log">
+                                <div v-for="(log, index) in state.sys_monitor.logs" :key="index" :class="log.level === 'WARN' ? 'warn' : 'info'">
+                                    [[ '[' + log.time + ']' ]] [[ log.level ]]: [[ log.message ]]
+                                </div>
+                                <div class="text-muted mt-2">... waiting for new events ...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4" v-show="currentModule === 'api_service'">
+                <div class="hero-card mb-4 text-center">
+                    <h5 class="fw-bold mb-2">开发者 API 接入</h5>
+                    <p class="mb-3 text-white-50">接口定义基于项目3当前 DRF 路由，以下地址均为真实后端入口</p>
+                    <div class="input-group mx-auto" style="max-width: 720px;">
+                        <span class="input-group-text bg-light">API Base</span>
+                        <input type="text" class="form-control" :value="state.api_service.base_url" readonly>
+                    </div>
+                    <div class="mt-3 small text-white-50">[[ state.api_service.auth_note ]]</div>
+                </div>
+                <div class="chart-card">
+                    <h6 class="fw-bold mb-3">可用接口端点</h6>
+                    <div class="accordion" id="apiAccordion">
+                        <div class="accordion-item" v-for="(api, index) in state.api_service.endpoints" :key="index">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" :data-bs-target="'#collapse' + index">
+                                    <span class="badge me-3" :class="api.method === 'GET' ? 'bg-success' : 'bg-warning'">[[ api.method ]]</span>
+                                    <span class="font-monospace text-dark">[[ api.endpoint ]]</span>
+                                </button>
+                            </h2>
+                            <div :id="'collapse' + index" class="accordion-collapse collapse" data-bs-parent="#apiAccordion">
+                                <div class="accordion-body bg-light small">
+                                    <strong>功能说明：</strong> [[ api.desc ]]<br><br>
+                                    <strong>请求示例：</strong>
+                                    <pre class="bg-dark text-light p-2 mt-2 rounded mb-0">curl -X [[ api.method ]] "[[ state.api_service.base_url.replace(/\/$/, '') ]][[ api.endpoint.replace('/api/v1', '') ]]"</pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4" v-show="currentModule === 'report_gen'">
+                <div class="chart-card text-center mb-4 border-primary border" style="border-style: dashed !important; background-color: #f8fbff;">
+                    <i class="bi bi-file-earmark-bar-graph text-primary" style="font-size: 3rem;"></i>
+                    <h5 class="mt-3 fw-bold">自动生成交通流量研判报告</h5>
+                    <p class="text-muted small">报告入口保留项目3原有功能，点击后进入真实报表生成页。</p>
+                    <a class="btn btn-primary mt-2" :href="state.report_gen.generate_url"><i class="bi bi-magic"></i> 进入报告生成</a>
+                </div>
+
+                <div class="chart-card">
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                        <h6 class="fw-bold mb-0">历史报告存档</h6>
+                        <a class="btn btn-sm btn-outline-primary" :href="state.report_gen.report_list_url">查看全部</a>
+                    </div>
+                    <div v-if="state.report_gen.reports.length">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between align-items-center" v-for="report in state.report_gen.reports" :key="report.filename">
+                                <div>
+                                    <i class="bi me-2" :class="report.file_type === 'PDF' ? 'bi-file-earmark-pdf text-danger' : 'bi-file-earmark-spreadsheet text-success'"></i>
+                                    [[ report.filename ]]
+                                    <div class="small text-muted mt-1">生成时间: [[ report.created_time ]] | 大小: [[ report.size_kb ]] KB | 类型: [[ report.file_type ]]</div>
+                                </div>
+                                <a class="btn btn-sm btn-outline-primary" :href="report.download_url"><i class="bi bi-download"></i> 下载</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div v-else class="empty-card">
+                        当前 `media/reports` 下还没有已生成报告。
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const payload = JSON.parse(document.getElementById('dashboard-payload').textContent);
+    const { createApp } = Vue;
+
+    createApp({
+        delimiters: ['[[', ']]'],
+        data() {
+            return {
+                state: payload,
+                currentModule: payload.initial_module,
+                predictFilters: { ...payload.predict_result.filters },
+                chartInstance: null,
+            };
+        },
+        mounted() {
+            this.renderChart();
+            window.addEventListener('resize', this.handleResize);
+        },
+        beforeUnmount() {
+            window.removeEventListener('resize', this.handleResize);
+            if (this.chartInstance) {
+                this.chartInstance.dispose();
+            }
+        },
+        methods: {
+            getModuleName(moduleId) {
+                const item = this.state.menu_items.find((menuItem) => menuItem.id === moduleId);
+                return item ? item.name : '未知模块';
+            },
+            switchModule(moduleId) {
+                this.currentModule = moduleId;
+                this.syncUrl();
+                if (moduleId === 'dashboard') {
+                    this.$nextTick(() => this.renderChart());
+                }
+            },
+            syncUrl() {
+                const url = new URL(window.location.href);
+                url.searchParams.set('module', this.currentModule);
+                window.history.replaceState({}, '', url);
+            },
+            formatNumber(value) {
+                if (value === null || value === undefined || value === '-') {
+                    return '-';
+                }
+                return Number(value).toLocaleString('zh-CN');
+            },
+            handleResize() {
+                if (this.chartInstance) {
+                    this.chartInstance.resize();
+                }
+            },
+            getSeriesColor(index) {
+                return ['#2563eb', '#f59e0b', '#10b981', '#8b5cf6'][index % 4];
+            },
+            renderChart() {
+                const chartDom = document.getElementById('main-chart');
+                if (!chartDom || !this.state.dashboard.chart.labels.length) {
+                    return;
+                }
+                if (!this.chartInstance) {
+                    this.chartInstance = echarts.init(chartDom);
+                }
+                const option = {
+                    tooltip: { trigger: 'axis', axisPointer: { type: 'cross' } },
+                    legend: {
+                        top: 0,
+                        data: ['真实流量', ...this.state.dashboard.chart.series.map((item) => item.name)],
+                    },
+                    grid: { left: '3%', right: '4%', bottom: '5%', containLabel: true },
+                    xAxis: {
+                        type: 'category',
+                        boundaryGap: false,
+                        data: this.state.dashboard.chart.labels,
+                        axisLabel: { color: '#64748b' },
+                        axisLine: { lineStyle: { color: '#cbd5e1' } },
+                    },
+                    yAxis: {
+                        type: 'value',
+                        name: '流量',
+                        axisLabel: { color: '#64748b' },
+                        splitLine: { lineStyle: { type: 'dashed', color: '#e2e8f0' } },
+                    },
+                    series: [
+                        {
+                            name: '真实流量',
+                            type: 'line',
+                            smooth: true,
+                            symbol: 'none',
+                            itemStyle: { color: '#94a3b8' },
+                            lineStyle: { width: 3 },
+                            areaStyle: {
+                                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                    { offset: 0, color: 'rgba(148, 163, 184, 0.28)' },
+                                    { offset: 1, color: 'rgba(148, 163, 184, 0.03)' },
+                                ]),
+                            },
+                            data: this.state.dashboard.chart.actual,
+                        },
+                        ...this.state.dashboard.chart.series.map((seriesItem, index) => ({
+                            name: seriesItem.name,
+                            type: 'line',
+                            smooth: true,
+                            symbol: 'circle',
+                            symbolSize: 6,
+                            itemStyle: { color: this.getSeriesColor(index) },
+                            lineStyle: { width: 3, color: this.getSeriesColor(index) },
+                            data: seriesItem.data,
+                        })),
+                    ],
+                };
+                this.chartInstance.setOption(option, true);
+                this.chartInstance.resize();
+            },
+            refreshDashboardData() {
+                const url = new URL('{{ dashboard_data_url }}', window.location.origin);
+                url.searchParams.set('module', this.currentModule);
+                if (this.predictFilters.date) url.searchParams.set('prediction_date', this.predictFilters.date);
+                if (this.predictFilters.location) url.searchParams.set('prediction_location', this.predictFilters.location);
+                if (this.predictFilters.model) url.searchParams.set('prediction_model', this.predictFilters.model);
+
+                fetch(url)
+                    .then((response) => response.json())
+                    .then((data) => {
+                        const moduleId = this.currentModule;
+                        this.state = data;
+                        this.currentModule = moduleId;
+                        this.predictFilters = { ...data.predict_result.filters };
+                        this.$nextTick(() => this.renderChart());
+                    });
+            },
+        },
+    }).mount('#app');
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

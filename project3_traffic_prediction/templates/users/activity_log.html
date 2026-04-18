@@ -1,0 +1,284 @@
+{% extends 'base.html' %}
+
+{% block title %}活动日志 - 智能交通流量预测系统{% endblock %}
+
+{% block nav_users %}active{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{% url 'user_list' %}">用户管理</a></li>
+<li class="breadcrumb-item active">活动日志</li>
+{% endblock %}
+
+{% block content %}
+<div id="activityLogApp">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0" style="font-weight:700;color:#1e3a5f;">
+            <i class="bi bi-clock-history me-2"></i>活动日志
+        </h4>
+        <button class="btn btn-outline-success btn-sm">
+            <i class="bi bi-download me-1"></i>导出日志
+        </button>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-2">
+                    <label class="form-label fw-bold">操作类型</label>
+                    <select class="form-select" name="action_type">
+                        <option value="">全部类型</option>
+                        <option value="login">登录</option>
+                        <option value="logout">登出</option>
+                        <option value="predict">预测</option>
+                        <option value="train">模型训练</option>
+                        <option value="upload">数据上传</option>
+                        <option value="export">数据导出</option>
+                        <option value="edit">编辑操作</option>
+                        <option value="delete">删除操作</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-bold">用户</label>
+                    <input type="text" class="form-control" name="user" placeholder="用户名"
+                           value="{{ request.GET.user }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-bold">开始日期</label>
+                    <input type="date" class="form-control" name="date_from" value="{{ request.GET.date_from }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-bold">结束日期</label>
+                    <input type="date" class="form-control" name="date_to" value="{{ request.GET.date_to }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-bold">结果</label>
+                    <select class="form-select" name="result">
+                        <option value="">全部</option>
+                        <option value="success">成功</option>
+                        <option value="failed">失败</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="bi bi-funnel me-1"></i>筛选
+                    </button>
+                    <a href="{% url 'activity_log' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-counterclockwise"></i>
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-start border-4 border-primary">
+                <div class="card-body py-3">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <small class="text-muted">今日操作数</small>
+                            <h4 class="fw-bold mb-0" style="color:#1e3a5f;">{{ today_count|default:'248' }}</h4>
+                        </div>
+                        <i class="bi bi-activity" style="font-size:2rem;color:#ddd;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-start border-4 border-success">
+                <div class="card-body py-3">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <small class="text-muted">活跃用户</small>
+                            <h4 class="fw-bold mb-0" style="color:#198754;">{{ active_users|default:'42' }}</h4>
+                        </div>
+                        <i class="bi bi-people" style="font-size:2rem;color:#ddd;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-start border-4 border-warning">
+                <div class="card-body py-3">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <small class="text-muted">预测请求</small>
+                            <h4 class="fw-bold mb-0" style="color:#ffc107;">{{ predict_count|default:'86' }}</h4>
+                        </div>
+                        <i class="bi bi-graph-up" style="font-size:2rem;color:#ddd;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-start border-4 border-danger">
+                <div class="card-body py-3">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <small class="text-muted">失败操作</small>
+                            <h4 class="fw-bold mb-0" style="color:#dc3545;">{{ fail_count|default:'3' }}</h4>
+                        </div>
+                        <i class="bi bi-exclamation-triangle" style="font-size:2rem;color:#ddd;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activity Log Table -->
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width:50px;">#</th>
+                            <th>时间</th>
+                            <th>用户</th>
+                            <th>操作类型</th>
+                            <th>详细描述</th>
+                            <th>IP地址</th>
+                            <th>结果</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in activities %}
+                        <tr>
+                            <td class="text-muted">{{ forloop.counter }}</td>
+                            <td>{{ log.created_at|date:"Y-m-d H:i:s" }}</td>
+                            <td>
+                                <span class="fw-bold">{{ log.user.username }}</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-{{ log.badge_class }}">{{ log.action_type }}</span>
+                            </td>
+                            <td>{{ log.description }}</td>
+                            <td><code>{{ log.ip_address }}</code></td>
+                            <td>
+                                {% if log.success %}
+                                <span class="badge bg-success-subtle text-success">成功</span>
+                                {% else %}
+                                <span class="badge bg-danger-subtle text-danger">失败</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <!-- Demo data -->
+                        <tr>
+                            <td class="text-muted">1</td>
+                            <td>2026-02-27 10:30:15</td>
+                            <td><span class="fw-bold">admin</span></td>
+                            <td><span class="badge bg-info">登录</span></td>
+                            <td>用户登录系统</td>
+                            <td><code>192.168.1.100</code></td>
+                            <td><span class="badge bg-success-subtle text-success">成功</span></td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">2</td>
+                            <td>2026-02-27 10:25:42</td>
+                            <td><span class="fw-bold">zhangwei</span></td>
+                            <td><span class="badge" style="background:#4ECDC4;">预测</span></td>
+                            <td>执行交通流量预测 - 中山路与解放路交叉口</td>
+                            <td><code>192.168.1.105</code></td>
+                            <td><span class="badge bg-success-subtle text-success">成功</span></td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">3</td>
+                            <td>2026-02-27 10:15:30</td>
+                            <td><span class="fw-bold">liming</span></td>
+                            <td><span class="badge bg-primary">上传</span></td>
+                            <td>上传交通数据文件 traffic_202602.csv (2.3MB)</td>
+                            <td><code>192.168.1.110</code></td>
+                            <td><span class="badge bg-success-subtle text-success">成功</span></td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">4</td>
+                            <td>2026-02-27 10:10:18</td>
+                            <td><span class="fw-bold">zhangwei</span></td>
+                            <td><span class="badge bg-warning text-dark">训练</span></td>
+                            <td>启动LSTM模型训练 - 批次大小32, 轮次100</td>
+                            <td><code>192.168.1.105</code></td>
+                            <td><span class="badge bg-success-subtle text-success">成功</span></td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">5</td>
+                            <td>2026-02-27 09:55:03</td>
+                            <td><span class="fw-bold">wangfang</span></td>
+                            <td><span class="badge bg-secondary">导出</span></td>
+                            <td>导出月度分析报告 - PDF格式</td>
+                            <td><code>192.168.1.115</code></td>
+                            <td><span class="badge bg-success-subtle text-success">成功</span></td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">6</td>
+                            <td>2026-02-27 09:45:21</td>
+                            <td><span class="fw-bold">chenjun</span></td>
+                            <td><span class="badge bg-info">登录</span></td>
+                            <td>用户登录系统</td>
+                            <td><code>192.168.1.120</code></td>
+                            <td><span class="badge bg-danger-subtle text-danger">失败</span></td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">7</td>
+                            <td>2026-02-27 09:30:45</td>
+                            <td><span class="fw-bold">admin</span></td>
+                            <td><span class="badge bg-danger">删除</span></td>
+                            <td>删除过期交通数据 - 2024年Q1数据</td>
+                            <td><code>192.168.1.100</code></td>
+                            <td><span class="badge bg-success-subtle text-success">成功</span></td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">8</td>
+                            <td>2026-02-27 09:20:10</td>
+                            <td><span class="fw-bold">zhangwei</span></td>
+                            <td><span class="badge" style="background:#6f42c1;color:#fff;">编辑</span></td>
+                            <td>修改模型参数 - CNN-LSTM模型 v1.3</td>
+                            <td><code>192.168.1.105</code></td>
+                            <td><span class="badge bg-success-subtle text-success">成功</span></td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">9</td>
+                            <td>2026-02-27 09:10:30</td>
+                            <td><span class="fw-bold">liming</span></td>
+                            <td><span class="badge bg-info">登录</span></td>
+                            <td>用户登录系统</td>
+                            <td><code>192.168.1.110</code></td>
+                            <td><span class="badge bg-success-subtle text-success">成功</span></td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">10</td>
+                            <td>2026-02-27 08:50:00</td>
+                            <td><span class="fw-bold">admin</span></td>
+                            <td><span class="badge bg-dark">系统</span></td>
+                            <td>系统自动备份完成</td>
+                            <td><code>127.0.0.1</code></td>
+                            <td><span class="badge bg-success-subtle text-success">成功</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="card-footer bg-white d-flex justify-content-between align-items-center py-3">
+            <span class="text-muted" style="font-size:0.85rem;">
+                显示第 1-10 条，共 {{ total_count|default:'1,248' }} 条
+            </span>
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item disabled"><a class="page-link" href="#">上一页</a></li>
+                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                    <li class="page-item"><a class="page-link" href="#">2</a></li>
+                    <li class="page-item"><a class="page-link" href="#">3</a></li>
+                    <li class="page-item"><a class="page-link" href="#">...</a></li>
+                    <li class="page-item"><a class="page-link" href="#">125</a></li>
+                    <li class="page-item"><a class="page-link" href="#">下一页</a></li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+{% endblock %}

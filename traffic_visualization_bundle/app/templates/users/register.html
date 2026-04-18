@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注册 - 智能交通流量预测系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #1e3a5f 0%, #2a4d7a 50%, #1a2f4a 100%);
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            padding: 20px 0;
+        }
+
+        .register-container {
+            width: 100%;
+            max-width: 480px;
+            padding: 20px;
+        }
+
+        .register-card {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .register-header {
+            background: linear-gradient(135deg, #1e3a5f, #2a4d7a);
+            padding: 28px 24px;
+            text-align: center;
+            color: #fff;
+        }
+
+        .register-header .logo-icon {
+            width: 56px;
+            height: 56px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 14px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .register-header h3 {
+            font-weight: 700;
+            margin-bottom: 4px;
+            font-size: 1.3rem;
+        }
+
+        .register-header p {
+            font-size: 0.85rem;
+            opacity: 0.8;
+            margin: 0;
+        }
+
+        .register-body {
+            padding: 28px;
+        }
+
+        .form-floating {
+            margin-bottom: 14px;
+        }
+
+        .form-floating .form-control,
+        .form-floating .form-select {
+            border-radius: 8px;
+            border: 2px solid #e9ecef;
+            height: 52px;
+        }
+
+        .form-floating .form-control:focus,
+        .form-floating .form-select:focus {
+            border-color: #4ECDC4;
+            box-shadow: 0 0 0 0.2rem rgba(78,205,196,0.15);
+        }
+
+        .btn-register {
+            width: 100%;
+            height: 48px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            background: linear-gradient(135deg, #1e3a5f, #2a4d7a);
+            border: none;
+            color: #fff;
+            transition: all 0.3s ease;
+        }
+
+        .btn-register:hover {
+            background: linear-gradient(135deg, #2a4d7a, #345d8a);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(30,58,95,0.4);
+            color: #fff;
+        }
+
+        .register-footer {
+            text-align: center;
+            padding: 0 28px 24px;
+        }
+
+        .register-footer a {
+            color: #1e3a5f;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .register-footer a:hover {
+            color: #4ECDC4;
+        }
+
+        .password-strength {
+            height: 4px;
+            border-radius: 2px;
+            background: #e9ecef;
+            margin-top: 4px;
+        }
+
+        .password-strength .strength-bar {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.3s ease, background 0.3s ease;
+            width: 0;
+        }
+
+        .alert {
+            border-radius: 8px;
+            border: none;
+            font-size: 0.9rem;
+        }
+
+        .particles-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .particles-bg span {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            animation: float 15s infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+        }
+
+        .particles-bg span:nth-child(1) { left: 15%; animation-delay: 0s; }
+        .particles-bg span:nth-child(2) { left: 30%; animation-delay: 2s; }
+        .particles-bg span:nth-child(3) { left: 50%; animation-delay: 4s; }
+        .particles-bg span:nth-child(4) { left: 70%; animation-delay: 1s; }
+        .particles-bg span:nth-child(5) { left: 85%; animation-delay: 3s; }
+    </style>
+</head>
+<body>
+    <div class="particles-bg">
+        <span></span><span></span><span></span><span></span><span></span>
+    </div>
+
+    <div class="register-container" style="position:relative;z-index:1;">
+        <div class="register-card">
+            <div class="register-header">
+                <div class="logo-icon">
+                    <i class="bi bi-person-plus"></i>
+                </div>
+                <h3>创建新账户</h3>
+                <p>注册以使用智能交通流量预测系统</p>
+            </div>
+
+            <div class="register-body">
+                {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+
+                {% if form.errors %}
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-circle me-1"></i>
+                    请修正以下错误后重新提交。
+                    <ul class="mb-0 mt-1" style="font-size:0.85rem;">
+                        {% for field in form %}
+                            {% for error in field.errors %}
+                            <li>{{ field.label }}: {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                        {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                <form method="post" action="{% url 'register' %}" id="registerForm">
+                    {% csrf_token %}
+
+                    <div class="form-floating">
+                        <input type="text" class="form-control" id="username" name="username"
+                               placeholder="用户名" required value="{{ form.username.value|default:'' }}">
+                        <label for="username"><i class="bi bi-person me-1"></i>用户名</label>
+                    </div>
+
+                    <div class="form-floating">
+                        <input type="email" class="form-control" id="email" name="email"
+                               placeholder="电子邮箱" required value="{{ form.email.value|default:'' }}">
+                        <label for="email"><i class="bi bi-envelope me-1"></i>电子邮箱</label>
+                    </div>
+
+                    <div class="form-floating">
+                        <input type="tel" class="form-control" id="phone" name="phone"
+                               placeholder="手机号码" value="{{ form.phone.value|default:'' }}">
+                        <label for="phone"><i class="bi bi-phone me-1"></i>手机号码</label>
+                    </div>
+
+                    <div class="form-floating">
+                        <select class="form-select" id="role" name="role">
+                            <option value="user" selected>普通用户</option>
+                            <option value="analyst">数据分析师</option>
+                            <option value="admin">系统管理员</option>
+                        </select>
+                        <label for="role"><i class="bi bi-shield me-1"></i>角色选择</label>
+                    </div>
+
+                    <div class="form-floating">
+                        <input type="password" class="form-control" id="password1" name="password1"
+                               placeholder="密码" required oninput="checkPasswordStrength(this.value)">
+                        <label for="password1"><i class="bi bi-lock me-1"></i>密码</label>
+                    </div>
+                    <div class="password-strength mb-3">
+                        <div class="strength-bar" id="strengthBar"></div>
+                    </div>
+
+                    <div class="form-floating">
+                        <input type="password" class="form-control" id="password2" name="password2"
+                               placeholder="确认密码" required>
+                        <label for="password2"><i class="bi bi-lock-fill me-1"></i>确认密码</label>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="agree" required>
+                        <label class="form-check-label" for="agree" style="font-size:0.85rem;">
+                            我已阅读并同意 <a href="#" style="color:#1e3a5f;">用户协议</a> 和 <a href="#" style="color:#1e3a5f;">隐私政策</a>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn btn-register">
+                        <i class="bi bi-person-plus me-1"></i> 注 册
+                    </button>
+                </form>
+            </div>
+
+            <div class="register-footer">
+                <p style="font-size:0.9rem;color:#666;">
+                    已有账户？
+                    <a href="{% url 'login' %}">立即登录</a>
+                </p>
+            </div>
+        </div>
+
+        <p class="text-center mt-3" style="color:rgba(255,255,255,0.5);font-size:0.75rem;">
+            &copy; 2026 智能交通流量预测系统 v1.0
+        </p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function checkPasswordStrength(password) {
+            const bar = document.getElementById('strengthBar');
+            let strength = 0;
+            if (password.length >= 6) strength++;
+            if (password.length >= 10) strength++;
+            if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+            if (/\d/.test(password)) strength++;
+            if (/[^a-zA-Z0-9]/.test(password)) strength++;
+
+            const widths = ['0%', '20%', '40%', '60%', '80%', '100%'];
+            const colors = ['#dc3545', '#dc3545', '#ffc107', '#ffc107', '#4ECDC4', '#198754'];
+
+            bar.style.width = widths[strength];
+            bar.style.background = colors[strength];
+        }
+    </script>
+</body>
+</html>

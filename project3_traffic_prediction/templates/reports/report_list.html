@@ -1,0 +1,276 @@
+{% extends 'base.html' %}
+
+{% block title %}报告管理 - 智能交通流量预测系统{% endblock %}
+
+{% block nav_report %}active{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item active">报告管理</li>
+{% endblock %}
+
+{% block content %}
+<div id="reportListApp">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0" style="font-weight:700;color:#1e3a5f;">
+            <i class="bi bi-file-earmark-text me-2"></i>报告管理
+        </h4>
+        <a href="{% url 'generate_report' %}" class="btn text-white" style="background:#1e3a5f;">
+            <i class="bi bi-plus-lg me-1"></i>生成新报告
+        </a>
+    </div>
+
+    <!-- Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-start border-4 border-primary">
+                <div class="card-body py-3">
+                    <small class="text-muted">报告总数</small>
+                    <h4 class="fw-bold mb-0" style="color:#1e3a5f;">86</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-start border-4" style="border-color:#4ECDC4 !important;">
+                <div class="card-body py-3">
+                    <small class="text-muted">本月生成</small>
+                    <h4 class="fw-bold mb-0" style="color:#4ECDC4;">12</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-start border-4 border-warning">
+                <div class="card-body py-3">
+                    <small class="text-muted">生成中</small>
+                    <h4 class="fw-bold mb-0" style="color:#ffc107;">1</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-start border-4 border-success">
+                <div class="card-body py-3">
+                    <small class="text-muted">总下载量</small>
+                    <h4 class="fw-bold mb-0" style="color:#198754;">342</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">报告类型</label>
+                    <select class="form-select" name="type">
+                        <option value="">全部类型</option>
+                        <option value="prediction">预测报告</option>
+                        <option value="analysis">数据分析报告</option>
+                        <option value="evaluation">模型评估报告</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-bold">格式</label>
+                    <select class="form-select" name="format">
+                        <option value="">全部格式</option>
+                        <option value="pdf">PDF</option>
+                        <option value="excel">Excel</option>
+                        <option value="word">Word</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-bold">开始日期</label>
+                    <input type="date" class="form-control" name="date_from">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-bold">结束日期</label>
+                    <input type="date" class="form-control" name="date_to">
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary me-1"><i class="bi bi-funnel me-1"></i>筛选</button>
+                    <a href="{% url 'report_list' %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-counterclockwise"></i></a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Report List -->
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>报告名称</th>
+                            <th>类型</th>
+                            <th>格式</th>
+                            <th>大小</th>
+                            <th>创建者</th>
+                            <th>创建时间</th>
+                            <th>状态</th>
+                            <th style="width:150px;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for report in reports %}
+                        <tr>
+                            <td class="fw-bold">{{ report.title }}</td>
+                            <td><span class="badge bg-primary">{{ report.report_type }}</span></td>
+                            <td>{{ report.format }}</td>
+                            <td>{{ report.file_size }}</td>
+                            <td>{{ report.creator }}</td>
+                            <td>{{ report.created_at|date:"Y-m-d H:i" }}</td>
+                            <td>
+                                {% if report.status == 'completed' %}
+                                <span class="badge bg-success">已完成</span>
+                                {% elif report.status == 'generating' %}
+                                <span class="badge bg-warning text-dark">生成中</span>
+                                {% else %}
+                                <span class="badge bg-danger">失败</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-outline-success me-1"><i class="bi bi-download"></i></a>
+                                <a href="#" class="btn btn-sm btn-outline-info me-1"><i class="bi bi-eye"></i></a>
+                                <a href="#" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <!-- Demo data -->
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-file-earmark-pdf text-danger me-2" style="font-size:1.3rem;"></i>
+                                    <span class="fw-bold">2月交通流量预测月度报告</span>
+                                </div>
+                            </td>
+                            <td><span class="badge" style="background:#1e3a5f;">预测报告</span></td>
+                            <td><span class="badge bg-danger">PDF</span></td>
+                            <td>2.8 MB</td>
+                            <td>zhangwei</td>
+                            <td>2026-02-27 10:00</td>
+                            <td><span class="badge bg-warning text-dark"><span class="spinner-border spinner-border-sm me-1" style="width:10px;height:10px;"></span>生成中</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-success me-1" disabled><i class="bi bi-download"></i></button>
+                                <button class="btn btn-sm btn-outline-info me-1" disabled><i class="bi bi-eye"></i></button>
+                                <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-file-earmark-excel text-success me-2" style="font-size:1.3rem;"></i>
+                                    <span class="fw-bold">CNN-LSTM模型评估报告</span>
+                                </div>
+                            </td>
+                            <td><span class="badge" style="background:#667eea;">模型评估</span></td>
+                            <td><span class="badge bg-success">Excel</span></td>
+                            <td>1.5 MB</td>
+                            <td>zhangwei</td>
+                            <td>2026-02-26 15:30</td>
+                            <td><span class="badge bg-success">已完成</span></td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-outline-success me-1" title="下载"><i class="bi bi-download"></i></a>
+                                <a href="#" class="btn btn-sm btn-outline-info me-1" title="查看"><i class="bi bi-eye"></i></a>
+                                <a href="#" class="btn btn-sm btn-outline-danger" title="删除"><i class="bi bi-trash"></i></a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-file-earmark-pdf text-danger me-2" style="font-size:1.3rem;"></i>
+                                    <span class="fw-bold">中山路交叉口数据分析</span>
+                                </div>
+                            </td>
+                            <td><span class="badge" style="background:#4ECDC4;">数据分析</span></td>
+                            <td><span class="badge bg-danger">PDF</span></td>
+                            <td>4.2 MB</td>
+                            <td>admin</td>
+                            <td>2026-02-25 11:20</td>
+                            <td><span class="badge bg-success">已完成</span></td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-outline-success me-1"><i class="bi bi-download"></i></a>
+                                <a href="#" class="btn btn-sm btn-outline-info me-1"><i class="bi bi-eye"></i></a>
+                                <a href="#" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-file-earmark-word text-primary me-2" style="font-size:1.3rem;"></i>
+                                    <span class="fw-bold">1月交通流量预测月度报告</span>
+                                </div>
+                            </td>
+                            <td><span class="badge" style="background:#1e3a5f;">预测报告</span></td>
+                            <td><span class="badge bg-primary">Word</span></td>
+                            <td>3.1 MB</td>
+                            <td>liming</td>
+                            <td>2026-02-01 09:00</td>
+                            <td><span class="badge bg-success">已完成</span></td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-outline-success me-1"><i class="bi bi-download"></i></a>
+                                <a href="#" class="btn btn-sm btn-outline-info me-1"><i class="bi bi-eye"></i></a>
+                                <a href="#" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-file-earmark-pdf text-danger me-2" style="font-size:1.3rem;"></i>
+                                    <span class="fw-bold">LSTM模型性能评估</span>
+                                </div>
+                            </td>
+                            <td><span class="badge" style="background:#667eea;">模型评估</span></td>
+                            <td><span class="badge bg-danger">PDF</span></td>
+                            <td>1.8 MB</td>
+                            <td>zhangwei</td>
+                            <td>2026-01-28 14:15</td>
+                            <td><span class="badge bg-success">已完成</span></td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-outline-success me-1"><i class="bi bi-download"></i></a>
+                                <a href="#" class="btn btn-sm btn-outline-info me-1"><i class="bi bi-eye"></i></a>
+                                <a href="#" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-file-earmark-x text-secondary me-2" style="font-size:1.3rem;"></i>
+                                    <span class="fw-bold">全市交通综合分析</span>
+                                </div>
+                            </td>
+                            <td><span class="badge" style="background:#4ECDC4;">数据分析</span></td>
+                            <td><span class="badge bg-danger">PDF</span></td>
+                            <td>-</td>
+                            <td>admin</td>
+                            <td>2026-01-25 16:30</td>
+                            <td><span class="badge bg-danger">失败</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-success me-1" disabled><i class="bi bi-download"></i></button>
+                                <button class="btn btn-sm btn-outline-primary me-1" title="重试"><i class="bi bi-arrow-clockwise"></i></button>
+                                <a href="#" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="card-footer bg-white d-flex justify-content-between align-items-center py-3">
+            <span class="text-muted" style="font-size:0.85rem;">显示第 1-6 条，共 86 条</span>
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item disabled"><a class="page-link" href="#">上一页</a></li>
+                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                    <li class="page-item"><a class="page-link" href="#">2</a></li>
+                    <li class="page-item"><a class="page-link" href="#">3</a></li>
+                    <li class="page-item"><a class="page-link" href="#">...</a></li>
+                    <li class="page-item"><a class="page-link" href="#">9</a></li>
+                    <li class="page-item"><a class="page-link" href="#">下一页</a></li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+{% endblock %}

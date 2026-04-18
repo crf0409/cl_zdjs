@@ -1,0 +1,149 @@
+交通数据可视化网页交付说明
+
+一、这个目录是什么
+- 本目录是从原仓库里整理出来的独立交付包，目标是把“交通数据可视化网页”单独带走，方便迁移到下一台电脑继续运行。
+- 可运行项目在 `app/` 目录内，是一个 Django 项目。
+- 当前包已附带 `db.sqlite3`，里面已经有示例用户、交通流量、天气、时段标签、预测结果和模型记录。
+
+二、目录结构
+- `start.sh`：Linux/macOS 一键启动脚本
+- `start.bat`：Windows 一键启动脚本
+- `app/manage.py`：Django 启动入口
+- `app/traffic_prediction/`：项目配置
+- `app/apps/`：业务模块
+- `app/templates/`：网页模板
+- `app/static/`：静态资源目录
+- `app/media/`：媒体/报告目录
+- `app/db.sqlite3`：当前可直接使用的数据库
+- `app/requirements-visualization.txt`：仅部署网页时推荐使用的精简依赖
+- `app/requirements.txt`：原始全量依赖，只有在你要补装训练/实验环境时再考虑使用
+
+三、最快启动方式
+如果对方电脑已经安装 Python 3.10+，解压后优先直接运行：
+
+- Linux/macOS：`bash start.sh`
+- Windows：双击 `start.bat` 或在终端运行 `start.bat`
+
+脚本会自动：
+- 创建虚拟环境
+- 安装网页所需依赖
+- 执行数据库迁移
+- 启动 Django 服务
+
+四、手动部署方式
+推荐 Python 版本：`3.10` 或 `3.11`
+
+在新电脑上进入本目录后，优先执行下面这组命令：
+
+```bash
+cd app
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+pip install -r requirements-visualization.txt
+python manage.py migrate
+python manage.py runserver 0.0.0.0:8000
+```
+
+如果是 Windows，把激活命令改成：
+
+```powershell
+.venv\Scripts\activate
+```
+
+五、启动后访问哪些页面
+- 首页大屏：`http://127.0.0.1:8000/`
+- 登录页：`http://127.0.0.1:8000/users/login/`
+- 流量图：`http://127.0.0.1:8000/visualization/flow-chart/`
+- 热力图：`http://127.0.0.1:8000/visualization/heatmap/`
+- 模型对比：`http://127.0.0.1:8000/visualization/comparison/`
+- 分析页：`http://127.0.0.1:8000/visualization/analysis/`
+
+说明：
+- 首页大屏可以先直接看。
+- `flow-chart`、`heatmap` 等页面带 `login_required`，需要先登录。
+
+六、当前数据库里已有的数据
+当前 `app/db.sqlite3` 中已有下列记录：
+- 用户：`3`
+- 交通流量：`17280`
+- 天气数据：`240`
+- 时段标签：`120`
+- 预测结果：`1080`
+- 训练模型：`4`
+- 用户活动：`100`
+
+七、示例账号
+这些账号来自项目里的 `init_data.py` 初始化脚本，通常可直接使用：
+- `admin / admin123`
+- `analyst / analyst123`
+- `user1 / user123`
+
+如果登录失败，说明数据库里的密码可能被改过。此时直接执行：
+
+```bash
+python manage.py createsuperuser
+```
+
+八、给下一位 AI 的部署建议
+如果你是接手这个目录的 AI，请按下面顺序处理：
+
+1. 先进入 `app/`
+2. 优先安装 `requirements-visualization.txt`
+3. 先执行 `python manage.py migrate`
+4. 再执行 `python manage.py runserver 0.0.0.0:8000`
+5. 打开 `/` 和 `/users/login/` 验证首页与登录页
+6. 登录后再验证 `/visualization/flow-chart/` 和 `/visualization/heatmap/`
+
+九、外部路径与可移植性
+项目配置里保留了两个“可选外部数据路径”环境变量：
+- `NUSCENES_DATA_DIR`
+- `YOLO_RESULTS_DIR`
+
+它们已经改成可移植写法：
+- 默认会按项目相邻目录去找
+- 也可以在新电脑上通过环境变量重新指定
+
+但对当前这个“网页展示交付包”来说，这两个路径不是启动首页和可视化页面的硬依赖；没有它们通常也能跑网页。
+
+十、已知限制
+- 这个包的重点是“网页展示、数据浏览、图表查看、演示预测结果”。
+- 项目代码里引用了 `utils.model_trainer` 和 `utils.model_predictor`，但当前交付包里没有这两个模块。
+- 因此：
+  - 模型训练页面更偏演示用途
+  - 预测接口/预测页面在缺少真实推理模块时会走演示逻辑或受限
+- 如果你只需要部署交通数据可视化网页，这不影响主目标。
+
+十一、如果要重新生成数据
+只有在你不想继续使用自带的 `db.sqlite3` 时，才需要这样做：
+
+```bash
+cd app
+source .venv/bin/activate
+pip install -r requirements.txt
+python manage.py migrate
+python init_data.py
+```
+
+说明：
+- `init_data.py` 会创建示例用户和示例数据。
+- 这一步需要比网页展示更多的依赖，比如 `numpy`、`pandas` 等，所以要装原始 `requirements.txt`。
+
+十二、如果要做正式部署而不是本地演示
+当前项目默认是开发配置：
+- `DEBUG = True`
+- `ALLOWED_HOSTS = ['*']`
+
+如果要上正式环境，至少要做这些事：
+- 把 `DEBUG` 改成 `False`
+- 替换 `SECRET_KEY`
+- 明确设置 `ALLOWED_HOSTS`
+- 执行 `python manage.py collectstatic --noinput`
+- 用 `gunicorn traffic_prediction.wsgi:application --bind 0.0.0.0:8000` 启动
+
+十三、最短可用结论
+对下一台电脑来说，最短路径就是：
+
+```bash
+bash start.sh
+```

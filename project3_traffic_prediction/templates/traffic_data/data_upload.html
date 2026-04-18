@@ -1,0 +1,330 @@
+{% extends 'base.html' %}
+
+{% block title %}数据上传 - 智能交通流量预测系统{% endblock %}
+
+{% block nav_data %}active{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{% url 'data_list' %}">交通数据管理</a></li>
+<li class="breadcrumb-item active">数据上传</li>
+{% endblock %}
+
+{% block content %}
+<div id="uploadApp">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0" style="font-weight:700;color:#1e3a5f;">
+            <i class="bi bi-cloud-upload me-2"></i>数据上传
+        </h4>
+        <a href="{% url 'data_list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>返回列表
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Upload Form -->
+            <div class="card mb-4">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-file-earmark-arrow-up me-2"></i>上传数据文件</h6>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'data_upload' %}" enctype="multipart/form-data" id="uploadForm">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">数据来源</label>
+                            <select class="form-select" name="source" required>
+                                <option value="">请选择数据来源</option>
+                                <option value="sensor">交通传感器</option>
+                                <option value="camera">智能摄像头</option>
+                                <option value="manual">手动录入</option>
+                                <option value="api">第三方API</option>
+                                <option value="other">其他来源</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">监测位置</label>
+                            <select class="form-select" name="location">
+                                <option value="">请选择监测位置（可选）</option>
+                                <option value="loc1">中山路-解放路交叉口</option>
+                                <option value="loc2">人民大道-建设路交叉口</option>
+                                <option value="loc3">科技路-创新大道交叉口</option>
+                                <option value="loc4">学府路-高新路交叉口</option>
+                                <option value="multiple">多个位置（文件中包含）</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">备注说明</label>
+                            <input type="text" class="form-control" name="description" placeholder="为此批次数据添加备注（可选）">
+                        </div>
+
+                        <!-- Drag & Drop Upload Area -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">选择文件</label>
+                            <div class="upload-area text-center p-5 rounded-3" id="dropZone"
+                                 style="border:2px dashed #ccc;background:#fafafa;cursor:pointer;transition:all 0.3s;"
+                                 onclick="document.getElementById('fileInput').click()"
+                                 ondragover="event.preventDefault();this.style.borderColor='#4ECDC4';this.style.background='#f0fffe';"
+                                 ondragleave="this.style.borderColor='#ccc';this.style.background='#fafafa';"
+                                 ondrop="handleDrop(event)">
+                                <i class="bi bi-cloud-arrow-up" style="font-size:3rem;color:#aaa;"></i>
+                                <h6 class="mt-2 mb-1">拖拽文件到此处或点击上传</h6>
+                                <p class="text-muted mb-0" style="font-size:0.85rem;">支持 CSV、Excel (.xlsx/.xls) 格式，单个文件不超过 50MB</p>
+                                <input type="file" class="d-none" id="fileInput" name="file"
+                                       accept=".csv,.xlsx,.xls" onchange="handleFileSelect(this)">
+                            </div>
+                        </div>
+
+                        <!-- Selected File Info -->
+                        <div class="mb-3" id="fileInfo" style="display:none;">
+                            <div class="alert alert-info d-flex align-items-center">
+                                <i class="bi bi-file-earmark-spreadsheet me-2" style="font-size:1.5rem;"></i>
+                                <div class="flex-grow-1">
+                                    <div class="fw-bold" id="fileName"></div>
+                                    <small class="text-muted" id="fileSize"></small>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearFile()">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Upload Progress -->
+                        <div class="mb-3" id="progressArea" style="display:none;">
+                            <label class="form-label fw-bold">上传进度</label>
+                            <div class="progress" style="height:24px;">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                     id="uploadProgress" role="progressbar" style="width:0%;background:#4ECDC4;">
+                                    0%
+                                </div>
+                            </div>
+                            <small class="text-muted mt-1 d-block" id="uploadStatus">准备上传...</small>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn text-white px-4" style="background:#1e3a5f;" id="uploadBtn">
+                                <i class="bi bi-upload me-1"></i>开始上传
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="previewData()">
+                                <i class="bi bi-eye me-1"></i>预览数据
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Preview Area -->
+            <div class="card" id="previewCard" style="display:none;">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-table me-2"></i>数据预览（前10行）</h6>
+                    <span class="badge bg-info" id="previewCount">10 行数据</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped mb-0" id="previewTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>时间</th>
+                                    <th>位置</th>
+                                    <th>机动车数</th>
+                                    <th>行人数</th>
+                                    <th>总流量</th>
+                                    <th>天气</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>2026-02-27 08:00</td>
+                                    <td>中山路-解放路</td>
+                                    <td>1,523</td>
+                                    <td>342</td>
+                                    <td>1,865</td>
+                                    <td>晴</td>
+                                </tr>
+                                <tr>
+                                    <td>2026-02-27 08:15</td>
+                                    <td>中山路-解放路</td>
+                                    <td>1,678</td>
+                                    <td>398</td>
+                                    <td>2,076</td>
+                                    <td>晴</td>
+                                </tr>
+                                <tr>
+                                    <td>2026-02-27 08:30</td>
+                                    <td>中山路-解放路</td>
+                                    <td>1,892</td>
+                                    <td>456</td>
+                                    <td>2,348</td>
+                                    <td>晴</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upload Guide -->
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-info-circle me-2"></i>上传说明</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="fw-bold mb-2" style="color:#1e3a5f;">文件格式要求</h6>
+                        <ul style="font-size:0.85rem;color:#666;" class="mb-0">
+                            <li>支持 CSV 和 Excel 格式</li>
+                            <li>文件大小不超过 50MB</li>
+                            <li>编码格式建议使用 UTF-8</li>
+                            <li>首行应为列名标题行</li>
+                        </ul>
+                    </div>
+                    <div class="mb-3">
+                        <h6 class="fw-bold mb-2" style="color:#1e3a5f;">必需字段</h6>
+                        <ul style="font-size:0.85rem;color:#666;" class="mb-0">
+                            <li><code>timestamp</code> - 采集时间</li>
+                            <li><code>location</code> - 监测位置</li>
+                            <li><code>vehicle_count</code> - 机动车数量</li>
+                            <li><code>total_flow</code> - 总流量</li>
+                        </ul>
+                    </div>
+                    <div class="mb-3">
+                        <h6 class="fw-bold mb-2" style="color:#1e3a5f;">可选字段</h6>
+                        <ul style="font-size:0.85rem;color:#666;" class="mb-0">
+                            <li><code>pedestrian_count</code> - 行人数量</li>
+                            <li><code>bicycle_count</code> - 自行车数量</li>
+                            <li><code>weather</code> - 天气状况</li>
+                            <li><code>temperature</code> - 温度</li>
+                            <li><code>speed_avg</code> - 平均车速</li>
+                        </ul>
+                    </div>
+                    <hr>
+                    <a href="#" class="btn btn-outline-primary btn-sm w-100">
+                        <i class="bi bi-download me-1"></i>下载模板文件
+                    </a>
+                </div>
+            </div>
+
+            <!-- Recent Uploads -->
+            <div class="card">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-clock-history me-2"></i>最近上传</h6>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <div class="fw-bold" style="font-size:0.85rem;">traffic_202602.csv</div>
+                                    <small class="text-muted">2.3MB | 12,580 条记录</small>
+                                </div>
+                                <span class="badge bg-success align-self-center">成功</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <div class="fw-bold" style="font-size:0.85rem;">sensor_data_0225.xlsx</div>
+                                    <small class="text-muted">5.1MB | 28,340 条记录</small>
+                                </div>
+                                <span class="badge bg-success align-self-center">成功</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <div class="fw-bold" style="font-size:0.85rem;">camera_data_feb.csv</div>
+                                    <small class="text-muted">1.8MB | 格式错误</small>
+                                </div>
+                                <span class="badge bg-danger align-self-center">失败</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function handleDrop(event) {
+        event.preventDefault();
+        event.target.style.borderColor = '#ccc';
+        event.target.style.background = '#fafafa';
+        const files = event.dataTransfer.files;
+        if (files.length > 0) {
+            document.getElementById('fileInput').files = files;
+            showFileInfo(files[0]);
+        }
+    }
+
+    function handleFileSelect(input) {
+        if (input.files.length > 0) {
+            showFileInfo(input.files[0]);
+        }
+    }
+
+    function showFileInfo(file) {
+        document.getElementById('fileInfo').style.display = 'block';
+        document.getElementById('fileName').textContent = file.name;
+        const sizeMB = (file.size / 1024 / 1024).toFixed(2);
+        document.getElementById('fileSize').textContent = `文件大小: ${sizeMB} MB`;
+    }
+
+    function clearFile() {
+        document.getElementById('fileInput').value = '';
+        document.getElementById('fileInfo').style.display = 'none';
+        document.getElementById('previewCard').style.display = 'none';
+    }
+
+    function previewData() {
+        if (!document.getElementById('fileInput').files.length) {
+            alert('请先选择要预览的文件');
+            return;
+        }
+        document.getElementById('previewCard').style.display = 'block';
+    }
+
+    // Simulate upload progress
+    document.getElementById('uploadForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        if (!document.getElementById('fileInput').files.length) {
+            alert('请先选择要上传的文件');
+            return;
+        }
+        const progressArea = document.getElementById('progressArea');
+        const progressBar = document.getElementById('uploadProgress');
+        const uploadStatus = document.getElementById('uploadStatus');
+        const uploadBtn = document.getElementById('uploadBtn');
+
+        progressArea.style.display = 'block';
+        uploadBtn.disabled = true;
+        uploadBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>上传中...';
+
+        let progress = 0;
+        const interval = setInterval(() => {
+            progress += Math.random() * 15;
+            if (progress >= 100) {
+                progress = 100;
+                clearInterval(interval);
+                progressBar.style.width = '100%';
+                progressBar.textContent = '100%';
+                progressBar.style.background = '#198754';
+                uploadStatus.textContent = '上传完成！数据正在处理中...';
+                uploadBtn.innerHTML = '<i class="bi bi-check-lg me-1"></i>上传成功';
+                uploadBtn.classList.remove('btn-primary');
+                uploadBtn.style.background = '#198754';
+            } else {
+                progressBar.style.width = progress + '%';
+                progressBar.textContent = Math.round(progress) + '%';
+                uploadStatus.textContent = `正在上传... ${Math.round(progress)}%`;
+            }
+        }, 300);
+    });
+</script>
+{% endblock %}

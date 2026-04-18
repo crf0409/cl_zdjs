@@ -1,0 +1,260 @@
+{% extends 'base.html' %}
+
+{% block title %}数据详情 - 智能交通流量预测系统{% endblock %}
+
+{% block nav_data %}active{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{% url 'data_list' %}">交通数据管理</a></li>
+<li class="breadcrumb-item active">数据详情</li>
+{% endblock %}
+
+{% block content %}
+<div id="dataDetailApp">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0" style="font-weight:700;color:#1e3a5f;">
+            <i class="bi bi-file-earmark-bar-graph me-2"></i>数据详情
+        </h4>
+        <div>
+            <a href="{% url 'data_list' %}" class="btn btn-outline-secondary me-2">
+                <i class="bi bi-arrow-left me-1"></i>返回列表
+            </a>
+            <button class="btn btn-outline-primary me-2">
+                <i class="bi bi-pencil me-1"></i>编辑
+            </button>
+            <button class="btn btn-outline-danger">
+                <i class="bi bi-trash me-1"></i>删除
+            </button>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Main Data Info -->
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-clipboard-data me-2"></i>交通流量数据</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted" style="font-size:0.8rem;">采集时间</label>
+                            <p class="fw-bold mb-0">{{ data.timestamp|default:'2026-02-27 10:00:00' }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted" style="font-size:0.8rem;">监测位置</label>
+                            <p class="fw-bold mb-0">{{ data.location|default:'中山路-解放路交叉口' }}</p>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="text-muted" style="font-size:0.8rem;">机动车数量</label>
+                            <h4 class="fw-bold mb-0" style="color:#1e3a5f;">{{ data.vehicle_count|default:'1,523' }}</h4>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="text-muted" style="font-size:0.8rem;">行人数量</label>
+                            <h4 class="fw-bold mb-0" style="color:#4ECDC4;">{{ data.pedestrian_count|default:'342' }}</h4>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="text-muted" style="font-size:0.8rem;">总流量</label>
+                            <h4 class="fw-bold mb-0" style="color:#FF6B6B;">{{ data.total_flow|default:'1,865' }}</h4>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label class="text-muted" style="font-size:0.8rem;">自行车数量</label>
+                            <p class="fw-bold mb-0">{{ data.bicycle_count|default:'156' }}</p>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="text-muted" style="font-size:0.8rem;">公交车数量</label>
+                            <p class="fw-bold mb-0">{{ data.bus_count|default:'28' }}</p>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="text-muted" style="font-size:0.8rem;">平均车速(km/h)</label>
+                            <p class="fw-bold mb-0">{{ data.avg_speed|default:'35.6' }}</p>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="text-muted" style="font-size:0.8rem;">占有率(%)</label>
+                            <p class="fw-bold mb-0">{{ data.occupancy|default:'68.2' }}</p>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-3 mb-2">
+                            <label class="text-muted" style="font-size:0.8rem;">数据来源</label>
+                            <p class="mb-0"><span class="badge" style="background:#1e3a5f;">{{ data.source|default:'传感器' }}</span></p>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <label class="text-muted" style="font-size:0.8rem;">数据状态</label>
+                            <p class="mb-0"><span class="badge bg-success">{{ data.status|default:'已清洗' }}</span></p>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <label class="text-muted" style="font-size:0.8rem;">数据ID</label>
+                            <p class="mb-0"><code>#{{ data.id|default:'TD-2026022710-001' }}</code></p>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <label class="text-muted" style="font-size:0.8rem;">录入时间</label>
+                            <p class="mb-0">{{ data.created_at|default:'2026-02-27 10:05:23' }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Time Period Flow Chart -->
+            <div class="card mb-4">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-graph-up me-2"></i>该位置今日流量趋势</h6>
+                </div>
+                <div class="card-body">
+                    <div id="periodChart" style="height:300px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Side Panel -->
+        <div class="col-lg-4">
+            <!-- Weather Data -->
+            <div class="card mb-4">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-cloud-sun me-2"></i>相关天气数据</h6>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <i class="bi bi-cloud-sun" style="font-size:2.5rem;color:#ffc107;"></i>
+                    </div>
+                    <table class="table table-sm mb-0">
+                        <tr>
+                            <td class="text-muted">天气状况</td>
+                            <td class="fw-bold text-end">{{ weather.condition|default:'多云' }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">温度</td>
+                            <td class="fw-bold text-end">{{ weather.temperature|default:'12°C' }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">湿度</td>
+                            <td class="fw-bold text-end">{{ weather.humidity|default:'65%' }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">风速</td>
+                            <td class="fw-bold text-end">{{ weather.wind_speed|default:'12 km/h' }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">风向</td>
+                            <td class="fw-bold text-end">{{ weather.wind_direction|default:'东北风' }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">能见度</td>
+                            <td class="fw-bold text-end">{{ weather.visibility|default:'8 km' }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">气压</td>
+                            <td class="fw-bold text-end">{{ weather.pressure|default:'1013 hPa' }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Time Period Info -->
+            <div class="card mb-4">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-clock me-2"></i>时间段信息</h6>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm mb-0">
+                        <tr>
+                            <td class="text-muted">所属时段</td>
+                            <td class="fw-bold text-end">上午高峰</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">星期</td>
+                            <td class="fw-bold text-end">星期四</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">是否工作日</td>
+                            <td class="text-end"><span class="badge bg-primary">工作日</span></td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">是否节假日</td>
+                            <td class="text-end"><span class="badge bg-secondary">否</span></td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">采集间隔</td>
+                            <td class="fw-bold text-end">15 分钟</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Related Records -->
+            <div class="card">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-link-45deg me-2"></i>相邻时段记录</h6>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <div class="d-flex justify-content-between">
+                                <small class="text-muted">09:45</small>
+                                <span class="fw-bold">1,789</span>
+                            </div>
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action active" style="background:#1e3a5f;border-color:#1e3a5f;">
+                            <div class="d-flex justify-content-between">
+                                <small>10:00 (当前)</small>
+                                <span class="fw-bold">1,865</span>
+                            </div>
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <div class="d-flex justify-content-between">
+                                <small class="text-muted">10:15</small>
+                                <span class="fw-bold">1,923</span>
+                            </div>
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <div class="d-flex justify-content-between">
+                                <small class="text-muted">10:30</small>
+                                <span class="fw-bold">1,856</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Period flow chart
+    const chart = echarts.init(document.getElementById('periodChart'));
+    const option = {
+        tooltip: { trigger: 'axis' },
+        grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+        xAxis: {
+            type: 'category',
+            data: ['06:00','07:00','08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00']
+        },
+        yAxis: { type: 'value', name: '流量' },
+        series: [{
+            name: '总流量',
+            type: 'bar',
+            data: [280, 850, 1650, 2100, 1865, 1720, 1680, 1590, 1520, 1680, 1920, 2350, 2680],
+            itemStyle: {
+                color: function(params) {
+                    return params.dataIndex === 4 ? '#FF6B6B' : '#1e3a5f';
+                },
+                borderRadius: [4, 4, 0, 0]
+            },
+            markPoint: {
+                data: [
+                    { type: 'max', name: '最大值' },
+                    { coord: [4, 1865], name: '当前', symbol: 'pin', symbolSize: 40, itemStyle: { color: '#FF6B6B' } }
+                ]
+            }
+        }]
+    };
+    chart.setOption(option);
+    window.addEventListener('resize', () => chart.resize());
+</script>
+{% endblock %}

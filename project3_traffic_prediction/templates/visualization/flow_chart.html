@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+
+{% block title %}交通流量可视化 - 智能交通流量预测系统{% endblock %}
+
+{% block nav_visualization %}active{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item active">数据可视化</li>
+{% endblock %}
+
+{% block content %}
+<div id="flowChartApp">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0" style="font-weight:700;color:#1e3a5f;">
+            <i class="bi bi-bar-chart-line me-2"></i>交通流量时序分析
+        </h4>
+        <div class="btn-group btn-group-sm">
+            <a href="{% url 'flow_chart' %}" class="btn btn-outline-primary active">流量图</a>
+            <a href="{% url 'heatmap' %}" class="btn btn-outline-primary">热力图</a>
+            <a href="{% url 'comparison' %}" class="btn btn-outline-primary">对比分析</a>
+            <a href="{% url 'analysis' %}" class="btn btn-outline-primary">多维分析</a>
+        </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-2">
+                    <label class="form-label fw-bold">开始日期</label>
+                    <input type="date" class="form-control" v-model="dateFrom">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-bold">结束日期</label>
+                    <input type="date" class="form-control" v-model="dateTo">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">监测位置（多选）</label>
+                    <select class="form-select" v-model="selectedLocations" multiple style="height:38px;">
+                        <option value="loc1">中山路-解放路</option>
+                        <option value="loc2">人民大道-建设路</option>
+                        <option value="loc3">科技路-创新大道</option>
+                        <option value="loc4">学府路-高新路</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-bold">聚合粒度</label>
+                    <select class="form-select" v-model="granularity">
+                        <option value="15min">15分钟</option>
+                        <option value="30min">30分钟</option>
+                        <option value="1h">1小时</option>
+                        <option value="1d">1天</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button class="btn text-white me-2" style="background:#1e3a5f;" @click="updateChart">
+                        <i class="bi bi-arrow-clockwise me-1"></i>更新
+                    </button>
+                    <button class="btn btn-outline-success" @click="exportChart">
+                        <i class="bi bi-download me-1"></i>导出图表
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Flow Chart -->
+    <div class="card mb-4">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-bold">交通流量时序图</h6>
+            <div class="btn-group btn-group-sm">
+                <button class="btn btn-outline-secondary" :class="{ active: chartType === 'line' }" @click="chartType='line'; updateChart()">折线图</button>
+                <button class="btn btn-outline-secondary" :class="{ active: chartType === 'bar' }" @click="chartType='bar'; updateChart()">柱状图</button>
+                <button class="btn btn-outline-secondary" :class="{ active: chartType === 'area' }" @click="chartType='area'; updateChart()">面积图</button>
+            </div>
+        </div>
+        <div class="card-body">
+            <div id="mainFlowChart" style="height:450px;"></div>
+        </div>
+    </div>
+
+    <!-- Statistics Summary -->
+    <div class="row">
+        <div class="col-md-3 mb-4">
+            <div class="card text-center" style="border-top:3px solid #1e3a5f;">
+                <div class="card-body py-3">
+                    <small class="text-muted">日均流量</small>
+                    <h3 class="fw-bold mb-0" style="color:#1e3a5f;">28,456</h3>
+                    <small class="text-success"><i class="bi bi-arrow-up"></i> +3.2%</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card text-center" style="border-top:3px solid #FF6B6B;">
+                <div class="card-body py-3">
+                    <small class="text-muted">日峰值流量</small>
+                    <h3 class="fw-bold mb-0" style="color:#FF6B6B;">3,850</h3>
+                    <small class="text-muted">峰值时间: 08:30</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card text-center" style="border-top:3px solid #4ECDC4;">
+                <div class="card-body py-3">
+                    <small class="text-muted">日最低流量</small>
+                    <h3 class="fw-bold mb-0" style="color:#4ECDC4;">35</h3>
+                    <small class="text-muted">谷值时间: 03:30</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card text-center" style="border-top:3px solid #667eea;">
+                <div class="card-body py-3">
+                    <small class="text-muted">标准差</small>
+                    <h3 class="fw-bold mb-0" style="color:#667eea;">856.3</h3>
+                    <small class="text-muted">变异系数: 0.42</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const { createApp } = Vue;
+
+createApp({
+    delimiters: ['[[', ']]'],
+    data() {
+        return {
+            dateFrom: '2026-02-20',
+            dateTo: '2026-02-27',
+            selectedLocations: ['loc1'],
+            granularity: '1h',
+            chartType: 'line',
+            chart: null
+        };
+    },
+    mounted() {
+        this.chart = echarts.init(document.getElementById('mainFlowChart'));
+        this.updateChart();
+        window.addEventListener('resize', () => this.chart && this.chart.resize());
+    },
+    methods: {
+        updateChart() {
+            const hours = [];
+            for (let i = 0; i < 24; i++) hours.push(`${String(i).padStart(2,'0')}:00`);
+
+            const genData = (offset) => hours.map((_, i) => {
+                const base = 200 + 2500 * Math.sin(Math.PI * (i - 4) / 14) * (i >= 5 && i <= 23 ? 1 : 0.1);
+                return Math.max(30, Math.round(base + offset + (Math.random() - 0.5) * 300));
+            });
+
+            const locations = {
+                loc1: { name: '中山路-解放路', color: '#1e3a5f', data: genData(0) },
+                loc2: { name: '人民大道-建设路', color: '#4ECDC4', data: genData(200) },
+                loc3: { name: '科技路-创新大道', color: '#667eea', data: genData(-300) },
+                loc4: { name: '学府路-高新路', color: '#FF6B6B', data: genData(100) }
+            };
+
+            const series = this.selectedLocations.map(loc => {
+                const info = locations[loc];
+                const base = {
+                    name: info.name,
+                    data: info.data,
+                    smooth: true,
+                    lineStyle: { color: info.color, width: 2 },
+                    itemStyle: { color: info.color }
+                };
+                if (this.chartType === 'bar') {
+                    return { ...base, type: 'bar', barMaxWidth: 30, itemStyle: { color: info.color, borderRadius: [4,4,0,0] } };
+                } else if (this.chartType === 'area') {
+                    return { ...base, type: 'line', areaStyle: { color: info.color, opacity: 0.15 } };
+                }
+                return { ...base, type: 'line' };
+            });
+
+            this.chart.setOption({
+                tooltip: { trigger: 'axis' },
+                legend: { data: series.map(s => s.name), top: 0 },
+                grid: { left: '3%', right: '4%', bottom: '12%', containLabel: true },
+                dataZoom: [
+                    { type: 'inside', start: 0, end: 100 },
+                    { type: 'slider', start: 0, end: 100, height: 20, bottom: 10 }
+                ],
+                xAxis: { type: 'category', data: hours },
+                yAxis: { type: 'value', name: '车辆数（辆/小时）' },
+                series: series
+            }, true);
+        },
+        exportChart() {
+            if (this.chart) {
+                const url = this.chart.getDataURL({ type: 'png', pixelRatio: 2 });
+                const a = document.createElement('a');
+                a.download = 'traffic_flow_chart.png';
+                a.href = url;
+                a.click();
+            }
+        }
+    }
+}).mount('#flowChartApp');
+</script>
+{% endblock %}

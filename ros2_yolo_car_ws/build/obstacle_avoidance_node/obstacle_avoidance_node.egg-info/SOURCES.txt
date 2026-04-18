@@ -1,0 +1,15 @@
+package.xml
+setup.cfg
+setup.py
+config/avoidance_params.yaml
+launch/avoidance.launch.py
+obstacle_avoidance_node/__init__.py
+obstacle_avoidance_node/avoidance_node.py
+obstacle_avoidance_node.egg-info/PKG-INFO
+obstacle_avoidance_node.egg-info/SOURCES.txt
+obstacle_avoidance_node.egg-info/dependency_links.txt
+obstacle_avoidance_node.egg-info/entry_points.txt
+obstacle_avoidance_node.egg-info/requires.txt
+obstacle_avoidance_node.egg-info/top_level.txt
+obstacle_avoidance_node.egg-info/zip-safe
+resource/obstacle_avoidance_node

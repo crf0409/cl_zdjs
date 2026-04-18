@@ -1,0 +1,40 @@
+# 压缩包与归档文件（不上传）
+*.zip
+*.gz
+*.tar
+*.tar.gz
+*.tgz
+*.xz
+*.bz2
+*.7z
+*.rar
+
+# 模型文件（不上传）
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.onnx
+*.h5
+*.hdf5
+*.bin
+*.npy
+*.npz
+*.pb
+*.gguf
+*.tflite
+*.engine
+*.trt
+
+# 常见实验与大文件
+outputs/
+output/
+results/
+runs/
+checkpoints/
+weights/
+models/
+model/
+logs/
+*.tmp
+*.log

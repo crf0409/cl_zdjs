@@ -1,0 +1,301 @@
+{% extends 'base.html' %}
+
+{% block title %}交通数据管理 - 智能交通流量预测系统{% endblock %}
+
+{% block nav_data %}active{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item active">交通数据管理</li>
+{% endblock %}
+
+{% block content %}
+<div id="dataListApp">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0" style="font-weight:700;color:#1e3a5f;">
+            <i class="bi bi-database me-2"></i>交通数据管理
+        </h4>
+        <div>
+            <a href="{% url 'data_upload' %}" class="btn text-white me-2" style="background:#1e3a5f;">
+                <i class="bi bi-upload me-1"></i>上传数据
+            </a>
+            <a href="{% url 'data_quality' %}" class="btn btn-outline-info">
+                <i class="bi bi-clipboard-check me-1"></i>数据质量
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-2">
+                    <label class="form-label fw-bold">开始日期</label>
+                    <input type="date" class="form-control" name="date_from" value="{{ request.GET.date_from }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-bold">结束日期</label>
+                    <input type="date" class="form-control" name="date_to" value="{{ request.GET.date_to }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-bold">监测位置</label>
+                    <select class="form-select" name="location">
+                        <option value="">全部位置</option>
+                        <option value="loc1">中山路-解放路</option>
+                        <option value="loc2">人民大道-建设路</option>
+                        <option value="loc3">科技路-创新大道</option>
+                        <option value="loc4">学府路-高新路</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-bold">数据来源</label>
+                    <select class="form-select" name="source">
+                        <option value="">全部来源</option>
+                        <option value="sensor">传感器</option>
+                        <option value="camera">摄像头</option>
+                        <option value="manual">手动录入</option>
+                        <option value="api">API导入</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-bold">状态</label>
+                    <select class="form-select" name="status">
+                        <option value="">全部状态</option>
+                        <option value="raw">原始数据</option>
+                        <option value="cleaned">已清洗</option>
+                        <option value="anomaly">异常数据</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary me-1">
+                        <i class="bi bi-funnel me-1"></i>筛选
+                    </button>
+                    <a href="{% url 'data_list' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-counterclockwise"></i>
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Bulk Actions -->
+    <div class="card mb-3" id="bulkActions" style="display:none;">
+        <div class="card-body py-2 d-flex align-items-center justify-content-between" style="background:#f0f7ff;">
+            <span class="fw-bold text-primary">已选择 <span id="selectedCount">0</span> 条数据</span>
+            <div>
+                <a href="{% url 'data_clean' %}" class="btn btn-sm btn-outline-primary me-1">
+                    <i class="bi bi-stars me-1"></i>批量清洗
+                </a>
+                <button class="btn btn-sm btn-outline-danger" onclick="batchDelete()">
+                    <i class="bi bi-trash me-1"></i>批量删除
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Table -->
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width:40px;">
+                                <input class="form-check-input" type="checkbox" id="selectAll" onchange="toggleSelectAll()">
+                            </th>
+                            <th>采集时间</th>
+                            <th>监测位置</th>
+                            <th>机动车数</th>
+                            <th>行人数</th>
+                            <th>总流量</th>
+                            <th>数据来源</th>
+                            <th>状态</th>
+                            <th style="width:120px;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in data_list %}
+                        <tr>
+                            <td><input class="form-check-input row-cb" type="checkbox" value="{{ item.id }}" onchange="updateBulkBar()"></td>
+                            <td>{{ item.timestamp|date:"Y-m-d H:i" }}</td>
+                            <td>{{ item.location }}</td>
+                            <td>{{ item.vehicle_count }}</td>
+                            <td>{{ item.pedestrian_count }}</td>
+                            <td class="fw-bold">{{ item.total_flow }}</td>
+                            <td><span class="badge bg-secondary">{{ item.source }}</span></td>
+                            <td>
+                                {% if item.status == 'cleaned' %}
+                                <span class="badge bg-success-subtle text-success">已清洗</span>
+                                {% elif item.status == 'anomaly' %}
+                                <span class="badge bg-danger-subtle text-danger">异常</span>
+                                {% else %}
+                                <span class="badge bg-warning-subtle text-warning">原始</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'data_detail' item.id %}" class="btn btn-sm btn-outline-info me-1"><i class="bi bi-eye"></i></a>
+                                <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <!-- Demo data -->
+                        <tr>
+                            <td><input class="form-check-input row-cb" type="checkbox" onchange="updateBulkBar()"></td>
+                            <td>2026-02-27 10:00</td>
+                            <td>中山路-解放路交叉口</td>
+                            <td>1,523</td>
+                            <td>342</td>
+                            <td class="fw-bold">1,865</td>
+                            <td><span class="badge" style="background:#1e3a5f;">传感器</span></td>
+                            <td><span class="badge bg-success-subtle text-success">已清洗</span></td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-outline-info me-1"><i class="bi bi-eye"></i></a>
+                                <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><input class="form-check-input row-cb" type="checkbox" onchange="updateBulkBar()"></td>
+                            <td>2026-02-27 09:45</td>
+                            <td>人民大道-建设路交叉口</td>
+                            <td>1,856</td>
+                            <td>425</td>
+                            <td class="fw-bold">2,281</td>
+                            <td><span class="badge" style="background:#4ECDC4;">摄像头</span></td>
+                            <td><span class="badge bg-success-subtle text-success">已清洗</span></td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-outline-info me-1"><i class="bi bi-eye"></i></a>
+                                <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><input class="form-check-input row-cb" type="checkbox" onchange="updateBulkBar()"></td>
+                            <td>2026-02-27 09:30</td>
+                            <td>科技路-创新大道交叉口</td>
+                            <td>1,205</td>
+                            <td>298</td>
+                            <td class="fw-bold">1,503</td>
+                            <td><span class="badge" style="background:#1e3a5f;">传感器</span></td>
+                            <td><span class="badge bg-warning-subtle text-warning">原始</span></td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-outline-info me-1"><i class="bi bi-eye"></i></a>
+                                <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><input class="form-check-input row-cb" type="checkbox" onchange="updateBulkBar()"></td>
+                            <td>2026-02-27 09:15</td>
+                            <td>学府路-高新路交叉口</td>
+                            <td>2,345</td>
+                            <td>567</td>
+                            <td class="fw-bold">2,912</td>
+                            <td><span class="badge bg-secondary">手动录入</span></td>
+                            <td><span class="badge bg-danger-subtle text-danger">异常</span></td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-outline-info me-1"><i class="bi bi-eye"></i></a>
+                                <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><input class="form-check-input row-cb" type="checkbox" onchange="updateBulkBar()"></td>
+                            <td>2026-02-27 09:00</td>
+                            <td>中山路-解放路交叉口</td>
+                            <td>1,689</td>
+                            <td>380</td>
+                            <td class="fw-bold">2,069</td>
+                            <td><span class="badge" style="background:#1e3a5f;">传感器</span></td>
+                            <td><span class="badge bg-success-subtle text-success">已清洗</span></td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-outline-info me-1"><i class="bi bi-eye"></i></a>
+                                <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><input class="form-check-input row-cb" type="checkbox" onchange="updateBulkBar()"></td>
+                            <td>2026-02-27 08:45</td>
+                            <td>人民大道-建设路交叉口</td>
+                            <td>2,678</td>
+                            <td>612</td>
+                            <td class="fw-bold">3,290</td>
+                            <td><span class="badge" style="background:#4ECDC4;">摄像头</span></td>
+                            <td><span class="badge bg-success-subtle text-success">已清洗</span></td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-outline-info me-1"><i class="bi bi-eye"></i></a>
+                                <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><input class="form-check-input row-cb" type="checkbox" onchange="updateBulkBar()"></td>
+                            <td>2026-02-27 08:30</td>
+                            <td>科技路-创新大道交叉口</td>
+                            <td>1,432</td>
+                            <td>315</td>
+                            <td class="fw-bold">1,747</td>
+                            <td><span class="badge" style="background:#6f42c1;color:#fff;">API导入</span></td>
+                            <td><span class="badge bg-success-subtle text-success">已清洗</span></td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-outline-info me-1"><i class="bi bi-eye"></i></a>
+                                <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><input class="form-check-input row-cb" type="checkbox" onchange="updateBulkBar()"></td>
+                            <td>2026-02-27 08:15</td>
+                            <td>学府路-高新路交叉口</td>
+                            <td>2,890</td>
+                            <td>645</td>
+                            <td class="fw-bold">3,535</td>
+                            <td><span class="badge" style="background:#1e3a5f;">传感器</span></td>
+                            <td><span class="badge bg-warning-subtle text-warning">原始</span></td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-outline-info me-1"><i class="bi bi-eye"></i></a>
+                                <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="card-footer bg-white d-flex justify-content-between align-items-center py-3">
+            <span class="text-muted" style="font-size:0.85rem;">
+                显示第 1-8 条，共 {{ total|default:'125,680' }} 条数据
+            </span>
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item disabled"><a class="page-link" href="#">上一页</a></li>
+                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                    <li class="page-item"><a class="page-link" href="#">2</a></li>
+                    <li class="page-item"><a class="page-link" href="#">3</a></li>
+                    <li class="page-item"><a class="page-link" href="#">...</a></li>
+                    <li class="page-item"><a class="page-link" href="#">15,710</a></li>
+                    <li class="page-item"><a class="page-link" href="#">下一页</a></li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function toggleSelectAll() {
+        const checked = document.getElementById('selectAll').checked;
+        document.querySelectorAll('.row-cb').forEach(cb => cb.checked = checked);
+        updateBulkBar();
+    }
+
+    function updateBulkBar() {
+        const count = document.querySelectorAll('.row-cb:checked').length;
+        document.getElementById('selectedCount').textContent = count;
+        document.getElementById('bulkActions').style.display = count > 0 ? 'block' : 'none';
+    }
+
+    function batchDelete() {
+        const count = document.querySelectorAll('.row-cb:checked').length;
+        if (confirm(`确定要删除选中的 ${count} 条数据吗？此操作不可恢复。`)) {
+            // Submit batch delete
+        }
+    }
+</script>
+{% endblock %}

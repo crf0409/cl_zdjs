@@ -1,0 +1,327 @@
+{% extends 'base.html' %}
+
+{% block title %}用户管理 - 智能交通流量预测系统{% endblock %}
+
+{% block nav_users %}active{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item active">用户管理</li>
+{% endblock %}
+
+{% block content %}
+<div id="userListApp">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0" style="font-weight:700;color:#1e3a5f;">
+            <i class="bi bi-people me-2"></i>用户管理
+        </h4>
+        <a href="{% url 'register' %}" class="btn text-white" style="background:#1e3a5f;">
+            <i class="bi bi-person-plus me-1"></i>添加用户
+        </a>
+    </div>
+
+    <!-- Search & Filter Bar -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">搜索用户</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" class="form-control" name="search"
+                               placeholder="用户名/邮箱/手机号" value="{{ request.GET.search }}">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-bold">角色筛选</label>
+                    <select class="form-select" name="role">
+                        <option value="">全部角色</option>
+                        <option value="admin" {% if request.GET.role == 'admin' %}selected{% endif %}>管理员</option>
+                        <option value="analyst" {% if request.GET.role == 'analyst' %}selected{% endif %}>分析师</option>
+                        <option value="user" {% if request.GET.role == 'user' %}selected{% endif %}>普通用户</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-bold">状态</label>
+                    <select class="form-select" name="status">
+                        <option value="">全部状态</option>
+                        <option value="active" {% if request.GET.status == 'active' %}selected{% endif %}>活跃</option>
+                        <option value="inactive" {% if request.GET.status == 'inactive' %}selected{% endif %}>已禁用</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-bold">排序方式</label>
+                    <select class="form-select" name="sort">
+                        <option value="-date_joined">注册时间(新-旧)</option>
+                        <option value="date_joined">注册时间(旧-新)</option>
+                        <option value="username">用户名(A-Z)</option>
+                        <option value="-last_login">最后登录</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="bi bi-funnel me-1"></i>筛选
+                    </button>
+                    <a href="{% url 'user_list' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i>重置
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-0" style="background:linear-gradient(135deg,#1e3a5f,#2a4d7a);">
+                <div class="card-body text-white text-center py-3">
+                    <h3 class="fw-bold mb-0">{{ total_users|default:'156' }}</h3>
+                    <small>总用户数</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0" style="background:linear-gradient(135deg,#dc3545,#e74c5c);">
+                <div class="card-body text-white text-center py-3">
+                    <h3 class="fw-bold mb-0">{{ admin_count|default:'8' }}</h3>
+                    <small>管理员</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0" style="background:linear-gradient(135deg,#0d6efd,#3d8bfd);">
+                <div class="card-body text-white text-center py-3">
+                    <h3 class="fw-bold mb-0">{{ analyst_count|default:'35' }}</h3>
+                    <small>分析师</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0" style="background:linear-gradient(135deg,#198754,#28a76d);">
+                <div class="card-body text-white text-center py-3">
+                    <h3 class="fw-bold mb-0">{{ user_count|default:'113' }}</h3>
+                    <small>普通用户</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Table -->
+    <div class="card">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-bold">用户列表</h6>
+            <div>
+                <button class="btn btn-sm btn-outline-success me-1" title="导出">
+                    <i class="bi bi-download me-1"></i>导出
+                </button>
+                <button class="btn btn-sm btn-outline-danger" title="批量删除" onclick="batchDelete()">
+                    <i class="bi bi-trash me-1"></i>批量操作
+                </button>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width:40px;">
+                                <input class="form-check-input" type="checkbox" id="selectAll" onclick="toggleSelectAll()">
+                            </th>
+                            <th>用户</th>
+                            <th>邮箱</th>
+                            <th>角色</th>
+                            <th>状态</th>
+                            <th>注册时间</th>
+                            <th>最后登录</th>
+                            <th style="width:160px;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in users %}
+                        <tr>
+                            <td><input class="form-check-input row-checkbox" type="checkbox" value="{{ u.id }}"></td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div style="width:36px;height:36px;background:#1e3a5f;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;margin-right:10px;">
+                                        {{ u.username|first|upper }}
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold">{{ u.username }}</div>
+                                        <small class="text-muted">{{ u.profile.real_name|default:'' }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ u.email }}</td>
+                            <td>
+                                {% if u.profile.role == 'admin' %}
+                                <span class="badge badge-admin">管理员</span>
+                                {% elif u.profile.role == 'analyst' %}
+                                <span class="badge badge-analyst">分析师</span>
+                                {% else %}
+                                <span class="badge badge-user">普通用户</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if u.is_active %}
+                                <span class="badge bg-success-subtle text-success">活跃</span>
+                                {% else %}
+                                <span class="badge bg-danger-subtle text-danger">已禁用</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ u.date_joined|date:"Y-m-d" }}</td>
+                            <td>{{ u.last_login|date:"Y-m-d H:i"|default:"从未登录" }}</td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-outline-primary me-1" title="编辑">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a href="#" class="btn btn-sm btn-outline-info me-1" title="查看">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="#" class="btn btn-sm btn-outline-danger" title="删除"
+                                   onclick="return confirm('确定要删除此用户吗？');">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <!-- Demo data -->
+                        <tr>
+                            <td><input class="form-check-input row-checkbox" type="checkbox"></td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div style="width:36px;height:36px;background:#dc3545;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;margin-right:10px;">A</div>
+                                    <div><div class="fw-bold">admin</div><small class="text-muted">系统管理员</small></div>
+                                </div>
+                            </td>
+                            <td>admin@traffic.com</td>
+                            <td><span class="badge badge-admin">管理员</span></td>
+                            <td><span class="badge bg-success-subtle text-success">活跃</span></td>
+                            <td>2025-01-15</td>
+                            <td>2026-02-27 10:30</td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-outline-primary me-1"><i class="bi bi-pencil"></i></a>
+                                <a href="#" class="btn btn-sm btn-outline-info me-1"><i class="bi bi-eye"></i></a>
+                                <a href="#" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><input class="form-check-input row-checkbox" type="checkbox"></td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div style="width:36px;height:36px;background:#0d6efd;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;margin-right:10px;">Z</div>
+                                    <div><div class="fw-bold">zhangwei</div><small class="text-muted">张伟</small></div>
+                                </div>
+                            </td>
+                            <td>zhangwei@traffic.com</td>
+                            <td><span class="badge badge-analyst">分析师</span></td>
+                            <td><span class="badge bg-success-subtle text-success">活跃</span></td>
+                            <td>2025-03-20</td>
+                            <td>2026-02-27 09:15</td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-outline-primary me-1"><i class="bi bi-pencil"></i></a>
+                                <a href="#" class="btn btn-sm btn-outline-info me-1"><i class="bi bi-eye"></i></a>
+                                <a href="#" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><input class="form-check-input row-checkbox" type="checkbox"></td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div style="width:36px;height:36px;background:#198754;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;margin-right:10px;">L</div>
+                                    <div><div class="fw-bold">liming</div><small class="text-muted">李明</small></div>
+                                </div>
+                            </td>
+                            <td>liming@traffic.com</td>
+                            <td><span class="badge badge-user">普通用户</span></td>
+                            <td><span class="badge bg-success-subtle text-success">活跃</span></td>
+                            <td>2025-06-10</td>
+                            <td>2026-02-26 16:45</td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-outline-primary me-1"><i class="bi bi-pencil"></i></a>
+                                <a href="#" class="btn btn-sm btn-outline-info me-1"><i class="bi bi-eye"></i></a>
+                                <a href="#" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><input class="form-check-input row-checkbox" type="checkbox"></td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div style="width:36px;height:36px;background:#0d6efd;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;margin-right:10px;">W</div>
+                                    <div><div class="fw-bold">wangfang</div><small class="text-muted">王芳</small></div>
+                                </div>
+                            </td>
+                            <td>wangfang@traffic.com</td>
+                            <td><span class="badge badge-analyst">分析师</span></td>
+                            <td><span class="badge bg-danger-subtle text-danger">已禁用</span></td>
+                            <td>2025-04-05</td>
+                            <td>2026-02-20 11:00</td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-outline-primary me-1"><i class="bi bi-pencil"></i></a>
+                                <a href="#" class="btn btn-sm btn-outline-info me-1"><i class="bi bi-eye"></i></a>
+                                <a href="#" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><input class="form-check-input row-checkbox" type="checkbox"></td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div style="width:36px;height:36px;background:#198754;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;margin-right:10px;">C</div>
+                                    <div><div class="fw-bold">chenjun</div><small class="text-muted">陈军</small></div>
+                                </div>
+                            </td>
+                            <td>chenjun@traffic.com</td>
+                            <td><span class="badge badge-user">普通用户</span></td>
+                            <td><span class="badge bg-success-subtle text-success">活跃</span></td>
+                            <td>2025-08-12</td>
+                            <td>2026-02-27 08:30</td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-outline-primary me-1"><i class="bi bi-pencil"></i></a>
+                                <a href="#" class="btn btn-sm btn-outline-info me-1"><i class="bi bi-eye"></i></a>
+                                <a href="#" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="card-footer bg-white d-flex justify-content-between align-items-center py-3">
+            <span class="text-muted" style="font-size:0.85rem;">
+                显示第 1-5 条，共 {{ total_users|default:'156' }} 条
+            </span>
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item disabled"><a class="page-link" href="#">上一页</a></li>
+                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                    <li class="page-item"><a class="page-link" href="#">2</a></li>
+                    <li class="page-item"><a class="page-link" href="#">3</a></li>
+                    <li class="page-item"><a class="page-link" href="#">...</a></li>
+                    <li class="page-item"><a class="page-link" href="#">32</a></li>
+                    <li class="page-item"><a class="page-link" href="#">下一页</a></li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function toggleSelectAll() {
+        const checked = document.getElementById('selectAll').checked;
+        document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = checked);
+    }
+
+    function batchDelete() {
+        const selected = document.querySelectorAll('.row-checkbox:checked');
+        if (selected.length === 0) {
+            alert('请先选择要操作的用户');
+            return;
+        }
+        if (confirm(`确定要对 ${selected.length} 个用户执行操作吗？`)) {
+            // Submit batch action
+        }
+    }
+</script>
+{% endblock %}

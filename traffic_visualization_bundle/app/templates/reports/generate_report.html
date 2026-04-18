@@ -1,0 +1,321 @@
+{% extends 'base.html' %}
+
+{% block title %}生成报告 - 智能交通流量预测系统{% endblock %}
+
+{% block nav_report %}active{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{% url 'report_list' %}">报告管理</a></li>
+<li class="breadcrumb-item active">生成报告</li>
+{% endblock %}
+
+{% block content %}
+<div id="generateApp">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0" style="font-weight:700;color:#1e3a5f;">
+            <i class="bi bi-file-earmark-plus me-2"></i>生成报告
+        </h4>
+        <a href="{% url 'report_list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>返回列表
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-gear me-2"></i>报告配置</h6>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'generate_report' %}" id="reportForm">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">报告标题</label>
+                            <input type="text" class="form-control" name="title" placeholder="输入报告标题"
+                                   required v-model="title">
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">报告类型</label>
+                                <select class="form-select" name="report_type" v-model="reportType" required>
+                                    <option value="">请选择报告类型</option>
+                                    <option value="prediction">预测报告</option>
+                                    <option value="analysis">数据分析报告</option>
+                                    <option value="evaluation">模型评估报告</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">输出格式</label>
+                                <select class="form-select" name="format" v-model="format" required>
+                                    <option value="">请选择格式</option>
+                                    <option value="pdf">PDF</option>
+                                    <option value="excel">Excel (.xlsx)</option>
+                                    <option value="word">Word (.docx)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">开始日期</label>
+                                <input type="date" class="form-control" name="date_from" v-model="dateFrom" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">结束日期</label>
+                                <input type="date" class="form-control" name="date_to" v-model="dateTo" required>
+                            </div>
+                        </div>
+
+                        <hr>
+                        <h6 class="fw-bold mb-3" style="color:#1e3a5f;">报告内容选项</h6>
+
+                        <!-- Prediction Report Options -->
+                        <div v-if="reportType === 'prediction'" class="mb-3">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">预测模型</label>
+                                    <select class="form-select" name="model">
+                                        <option value="all">全部已部署模型</option>
+                                        <option value="cnn_lstm">CNN-LSTM v1.3</option>
+                                        <option value="lstm">LSTM v2.1</option>
+                                        <option value="cnn">CNN v1.0</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">监测位置</label>
+                                    <select class="form-select" name="location">
+                                        <option value="all">全部位置</option>
+                                        <option value="loc1">中山路-解放路</option>
+                                        <option value="loc2">人民大道-建设路</option>
+                                        <option value="loc3">科技路-创新大道</option>
+                                        <option value="loc4">学府路-高新路</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">包含内容</label>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="incSummary" checked>
+                                        <label class="form-check-label" for="incSummary">概述摘要</label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="incCharts" checked>
+                                        <label class="form-check-label" for="incCharts">图表分析</label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="incData" checked>
+                                        <label class="form-check-label" for="incData">详细数据表</label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="incMetrics" checked>
+                                        <label class="form-check-label" for="incMetrics">性能指标</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="incTrend" checked>
+                                        <label class="form-check-label" for="incTrend">趋势分析</label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="incComparison">
+                                        <label class="form-check-label" for="incComparison">对比分析</label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="incWeather">
+                                        <label class="form-check-label" for="incWeather">天气影响分析</label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="incRecommendation">
+                                        <label class="form-check-label" for="incRecommendation">建议与结论</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">备注说明</label>
+                            <textarea class="form-control" name="notes" rows="3" placeholder="添加报告备注（可选）"></textarea>
+                        </div>
+
+                        <!-- Generate Progress -->
+                        <div class="mb-3" id="progressArea" style="display:none;">
+                            <div class="progress" style="height:24px;">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                     id="genProgress" style="width:0%;background:#4ECDC4;">0%</div>
+                            </div>
+                            <small class="text-muted mt-1 d-block" id="genStatus">正在准备...</small>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn text-white px-4" style="background:#1e3a5f;"
+                                    id="genBtn" onclick="generateReport()">
+                                <i class="bi bi-file-earmark-plus me-1"></i>生成报告
+                            </button>
+                            <button type="button" class="btn btn-outline-primary" onclick="previewReport()">
+                                <i class="bi bi-eye me-1"></i>预览
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Report Types Info -->
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-info-circle me-2"></i>报告类型说明</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3 p-3 rounded" style="background:rgba(30,58,95,0.05);">
+                        <h6 class="fw-bold" style="color:#1e3a5f;"><i class="bi bi-graph-up-arrow me-1"></i>预测报告</h6>
+                        <p class="mb-0" style="font-size:0.85rem;">包含指定时间段内的交通流量预测结果、预测精度分析、异常预测记录及预测建议。</p>
+                    </div>
+                    <div class="mb-3 p-3 rounded" style="background:rgba(78,205,196,0.05);">
+                        <h6 class="fw-bold" style="color:#4ECDC4;"><i class="bi bi-bar-chart me-1"></i>数据分析报告</h6>
+                        <p class="mb-0" style="font-size:0.85rem;">对交通数据进行全面统计分析，包括流量趋势、时段分布、位置比较及数据质量评估。</p>
+                    </div>
+                    <div class="p-3 rounded" style="background:rgba(102,126,234,0.05);">
+                        <h6 class="fw-bold" style="color:#667eea;"><i class="bi bi-cpu me-1"></i>模型评估报告</h6>
+                        <p class="mb-0" style="font-size:0.85rem;">评估预测模型的性能指标（MAE、RMSE、R²等），训练过程分析，及模型间对比。</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-file-earmark me-2"></i>输出格式</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="bi bi-file-earmark-pdf text-danger me-3" style="font-size:2rem;"></i>
+                        <div>
+                            <strong>PDF</strong>
+                            <p class="mb-0 text-muted" style="font-size:0.8rem;">适合打印和正式文档分享</p>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="bi bi-file-earmark-excel text-success me-3" style="font-size:2rem;"></i>
+                        <div>
+                            <strong>Excel</strong>
+                            <p class="mb-0 text-muted" style="font-size:0.8rem;">适合数据分析和二次处理</p>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-file-earmark-word text-primary me-3" style="font-size:2rem;"></i>
+                        <div>
+                            <strong>Word</strong>
+                            <p class="mb-0 text-muted" style="font-size:0.8rem;">适合编辑和格式化输出</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Reports -->
+            <div class="card">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-clock-history me-2"></i>最近生成</h6>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <div class="fw-bold" style="font-size:0.85rem;">CNN-LSTM模型评估报告</div>
+                                    <small class="text-muted">Excel | 1.5MB | 02-26</small>
+                                </div>
+                                <span class="badge bg-success align-self-center">完成</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <div class="fw-bold" style="font-size:0.85rem;">中山路交叉口分析</div>
+                                    <small class="text-muted">PDF | 4.2MB | 02-25</small>
+                                </div>
+                                <span class="badge bg-success align-self-center">完成</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <div class="fw-bold" style="font-size:0.85rem;">1月预测月度报告</div>
+                                    <small class="text-muted">Word | 3.1MB | 02-01</small>
+                                </div>
+                                <span class="badge bg-success align-self-center">完成</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const { createApp } = Vue;
+
+createApp({
+    delimiters: ['[[', ']]'],
+    data() {
+        return {
+            title: '',
+            reportType: '',
+            format: '',
+            dateFrom: '2026-02-01',
+            dateTo: '2026-02-27'
+        };
+    }
+}).mount('#generateApp');
+
+function generateReport() {
+    const btn = document.getElementById('genBtn');
+    const progressArea = document.getElementById('progressArea');
+    const progressBar = document.getElementById('genProgress');
+    const genStatus = document.getElementById('genStatus');
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>生成中...';
+    progressArea.style.display = 'block';
+
+    const steps = [
+        { pct: 10, msg: '正在收集数据...' },
+        { pct: 25, msg: '正在分析数据...' },
+        { pct: 40, msg: '正在生成图表...' },
+        { pct: 55, msg: '正在计算指标...' },
+        { pct: 70, msg: '正在编排报告内容...' },
+        { pct: 85, msg: '正在生成文档...' },
+        { pct: 95, msg: '正在优化输出...' },
+        { pct: 100, msg: '报告生成完成！' }
+    ];
+
+    let i = 0;
+    const interval = setInterval(() => {
+        if (i >= steps.length) {
+            clearInterval(interval);
+            btn.innerHTML = '<i class="bi bi-check-lg me-1"></i>生成完成';
+            btn.style.background = '#198754';
+            progressBar.style.background = '#198754';
+            progressBar.classList.remove('progress-bar-animated');
+            return;
+        }
+        progressBar.style.width = steps[i].pct + '%';
+        progressBar.textContent = steps[i].pct + '%';
+        genStatus.textContent = steps[i].msg;
+        i++;
+    }, 800);
+}
+
+function previewReport() {
+    alert('报告预览功能：将在新窗口中显示报告预览');
+}
+</script>
+{% endblock %}

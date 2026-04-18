@@ -1,0 +1,23 @@
+============================================================
+YOLO Obstacle Avoidance Experiment Summary
+============================================================
+
+Duration: 120.1s
+Total detection frames: 3145
+Total detections: 126
+Avg detections/frame: 0.04
+Avg confidence: 0.321
+Min confidence: 0.251
+Max confidence: 0.601
+
+Total velocity commands: 3128
+Avg linear velocity: 0.1982 m/s
+Avg angular velocity: 0.0072 rad/s
+Stop events (v<0.01): 0 (0.0%)
+Turn events (|w|>0.1): 92 (2.9%)
+
+Avg detection frequency: 25.8 Hz
+Min detection frequency: 10.8 Hz
+Max detection frequency: 28.0 Hz
+
+============================================================
